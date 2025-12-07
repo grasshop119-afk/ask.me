@@ -1,1 +1,38 @@
-
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Черный фон со стикером</title>
+    <style>
+        body {
+            background-color: #000;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .message {
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .error {
+            color: #ff6b6b;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="message">
+        <p>Для отображения .tgs стикеров нужна библиотека Lottie</p>
+        <p class="error">Файл стикера: stickers/None.tgs</p>
+        <p class="error">Используйте первый вариант скрипта с подключением библиотеки</p>
+    </div>
+</body>
+</html>
