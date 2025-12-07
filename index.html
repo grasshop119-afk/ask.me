@@ -1,31 +1,476 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Предложения - Chibeki</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 52px;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            z-index: 100;
+            border-bottom: 0.5px solid #222;
+        }
+
+        .back-button {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 8px;
+        }
+
+        .back-button img {
+            width: 24px;
+            height: 24px;
+            filter: invert(1);
+            opacity: 0.9;
+        }
+
+        .logo {
+            height: 32px;
+        }
+
+        .main-content {
+            margin-top: 52px;
+            padding: 16px;
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #FFFFFF;
+            text-align: center;
+            font-family: 'Montserrat', -apple-system, sans-serif;
+        }
+
+        .refresh-timer {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            margin-bottom: 24px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            display: inline-block;
+            margin-left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .refresh-timer .time {
+            color: var(--accent-color, #007AFF);
+            font-weight: 600;
+        }
+
+        .offer-card {
+            background: #1A1A1A;
+            border-radius: 24px;
+            border: 1px solid #222;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .offer-header {
+            margin-bottom: 16px;
+        }
+
+        .offer-title {
+            font-family: 'Montserrat', -apple-system, sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .offer-description {
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.4;
+        }
+
+        .stickers-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .sticker-item {
+            background: #000;
+            border-radius: 16px;
+            border: 1px solid #333;
+            padding: 12px;
+            text-align: center;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .sticker-item:active {
+            transform: scale(0.96);
+            background: #111;
+        }
+
+        .sticker-animation {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .sticker-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: #FFFFFF;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sticker-price {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--accent-color, #007AFF);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .sticker-price::before {
+            content: '';
+            display: block;
+            width: 12px;
+            height: 12px;
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            border-radius: 50%;
+        }
+
+        .buy-button {
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent-color, #007AFF) 0%, #0056CC 100%);
+            border: none;
+            border-radius: 16px;
+            padding: 16px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+
+        .buy-button:active {
+            opacity: 0.8;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 16px;
+        }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            gap: 16px;
+        }
+
+        .loading-wheel {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            border-top-color: rgba(255, 255, 255, 0.8);
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        :root {
+            --accent-color: #007AFF;
+        }
+
+        @media (max-width: 375px) {
+            .section-title {
+                font-size: 24px;
+            }
+            
+            .offer-title {
+                font-size: 20px;
+            }
+            
+            .stickers-grid {
+                gap: 8px;
+            }
+            
+            .sticker-animation {
+                height: 80px;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js"></script>
-    <style>body {background:#000;margin:0;}</style>
 </head>
 <body>
-    <div id="lottie" style="width:300px;height:300px;margin:auto;"></div>
-    
+    <div class="header">
+        <div class="back-button" onclick="goBack()">
+            <img src="https://img.icons8.com/?size=100&id=83198&format=png&color=000000" alt="Назад">
+        </div>
+        <img src="https://i.ibb.co/zTB331HR/image.png" alt="Chibeki" class="logo">
+    </div>
+
+    <div class="main-content">
+        <div class="section-title">Предложения</div>
+        
+        <div class="refresh-timer" id="refreshTimer">
+            Обновление через: <span class="time" id="timeLeft">23:59:59</span>
+        </div>
+        
+        <div class="offer-card">
+            <div class="offer-header">
+                <div class="offer-title">Предложения мусорщиков</div>
+                <div class="offer-description">
+                    Джавы обновляют свой ассортимент каждые 17 часов!<br>
+                    Здесь можно найти что-нибудь годное
+                </div>
+            </div>
+            
+            <div class="stickers-grid" id="stickersGrid">
+                <div class="loading">
+                    <div class="loading-wheel"></div>
+                    <div>Загрузка предложений...</div>
+                </div>
+            </div>
+            
+            <button class="buy-button" onclick="buyAll()">
+                Купить все за <span id="totalPrice">0</span>
+            </button>
+        </div>
+    </div>
+
     <script>
-        // Пробуем как JSON (переименуй файл в .json)
-        fetch('Animations/CTree.json')
-            .then(r => r.json())
-            .then(data => {
-                lottie.loadAnimation({
-                    container: document.getElementById('lottie'),
-                    renderer: 'svg',
-                    loop: true,
-                    autoplay: true,
-                    animationData: data
-                });
-            })
-            .catch(err => {
-                console.error('Ошибка:', err);
-                document.getElementById('lottie').innerHTML = 
-                    '<div style="color:white;text-align:center;padding:20px;">' +
-                    'Переименуй CTree.lottie в CTree.json</div>';
+        const tg = window.Telegram.WebApp;
+        let currentStickers = [];
+        
+        // Список доступных стикеров (замени на реальные имена файлов)
+        const availableStickers = [
+            { name: "CTree", file: "CTree.json" },
+            { name: "Fireworks", file: "Fireworks.json" },
+            { name: "Rocket", file: "Rocket.json" },
+            { name: "Heart", file: "Heart.json" },
+            { name: "Star", file: "Star.json" },
+            { name: "Coin", file: "Coin.json" },
+            { name: "Diamond", file: "Diamond.json" },
+            { name: "Crystal", file: "Crystal.json" }
+        ];
+        
+        function initTelegramApp() {
+            tg.ready();
+            tg.expand();
+            tg.setHeaderColor('#000000');
+            tg.setBackgroundColor('#000000');
+            
+            if (tg.themeParams.accent_text_color) {
+                document.documentElement.style.setProperty('--accent-color', tg.themeParams.accent_text_color);
+            }
+            
+            loadOffers();
+            startCountdown();
+        }
+        
+        function goBack() {
+            tg.HapticFeedback.impactOccurred('light');
+            tg.close();
+        }
+        
+        function getRandomStickers(count = 3) {
+            // Перемешиваем массив и берем первые count элементов
+            const shuffled = [...availableStickers].sort(() => Math.random() - 0.5);
+            return shuffled.slice(0, count);
+        }
+        
+        function getRandomPrice() {
+            // Случайная цена от 78 до 145
+            return Math.floor(Math.random() * (145 - 78 + 1)) + 78;
+        }
+        
+        function loadOffers() {
+            const stickersGrid = document.getElementById('stickersGrid');
+            
+            // Генерируем случайные стикеры
+            currentStickers = getRandomStickers(3).map(sticker => ({
+                ...sticker,
+                price: getRandomPrice()
+            }));
+            
+            stickersGrid.innerHTML = '';
+            
+            // Загружаем каждый стикер
+            currentStickers.forEach((sticker, index) => {
+                const item = document.createElement('div');
+                item.className = 'sticker-item';
+                item.dataset.index = index;
+                
+                item.innerHTML = `
+                    <div class="sticker-animation" id="animation${index}"></div>
+                    <div class="sticker-name">${sticker.name}</div>
+                    <div class="sticker-price">${sticker.price}</div>
+                `;
+                
+                stickersGrid.appendChild(item);
+                
+                // Загружаем Lottie анимацию
+                setTimeout(() => {
+                    try {
+                        lottie.loadAnimation({
+                            container: document.getElementById(`animation${index}`),
+                            renderer: 'svg',
+                            loop: true,
+                            autoplay: true,
+                            path: `Animations/${sticker.file}`
+                        });
+                    } catch (error) {
+                        console.error(`Ошибка загрузки ${sticker.file}:`, error);
+                        // Запасной вариант - показываем текст
+                        document.getElementById(`animation${index}`).innerHTML = 
+                            `<div style="color:rgba(255,255,255,0.3);font-size:12px;">${sticker.name}</div>`;
+                    }
+                }, 100 * (index + 1));
             });
+            
+            // Обновляем общую цену
+            updateTotalPrice();
+        }
+        
+        function updateTotalPrice() {
+            const total = currentStickers.reduce((sum, sticker) => sum + sticker.price, 0);
+            document.getElementById('totalPrice').textContent = total;
+        }
+        
+        function startCountdown() {
+            function updateCountdown() {
+                const now = new Date();
+                const moscowTime = new Date(now.toLocaleString("en-US", {timeZone: "Europe/Moscow"}));
+                
+                // Время до следующего обновления (каждые 17 часов)
+                const updateInterval = 17 * 60 * 60 * 1000; // 17 часов в миллисекундах
+                const startTime = new Date(moscowTime.getFullYear(), moscowTime.getMonth(), moscowTime.getDate(), 0, 0, 0);
+                const elapsed = moscowTime - startTime;
+                const cycles = Math.floor(elapsed / updateInterval);
+                const nextUpdate = new Date(startTime.getTime() + (cycles + 1) * updateInterval);
+                
+                let diff = nextUpdate - moscowTime;
+                
+                // Если время обновления прошло, обновляем сразу
+                if (diff <= 0) {
+                    tg.HapticFeedback.impactOccurred('medium');
+                    loadOffers();
+                    // Следующее обновление через 17 часов
+                    diff = updateInterval;
+                }
+                
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                
+                document.getElementById('timeLeft').textContent = 
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        }
+        
+        function buyAll() {
+            tg.HapticFeedback.impactOccurred('heavy');
+            
+            const totalPrice = currentStickers.reduce((sum, sticker) => sum + sticker.price, 0);
+            
+            tg.showAlert(`Вы хотите купить все стикеры за ${totalPrice}?`, () => {
+                // Здесь будет логика покупки
+                tg.showAlert(`Покупка на ${totalPrice} успешно выполнена!`);
+                // Обновляем предложения после покупки
+                setTimeout(() => {
+                    loadOffers();
+                }, 1000);
+            });
+        }
+        
+        // Обработчик клика по отдельному стикеру
+        document.addEventListener('click', function(e) {
+            const stickerItem = e.target.closest('.sticker-item');
+            if (stickerItem) {
+                const index = parseInt(stickerItem.dataset.index);
+                const sticker = currentStickers[index];
+                
+                if (sticker) {
+                    tg.HapticFeedback.impactOccurred('light');
+                    tg.showConfirm(`Купить "${sticker.name}" за ${sticker.price}?`, (confirmed) => {
+                        if (confirmed) {
+                            tg.showAlert(`Стикер "${sticker.name}" куплен за ${sticker.price}!`);
+                            // Можно удалить купленный стикер из списка
+                            currentStickers.splice(index, 1);
+                            loadOffers();
+                        }
+                    });
+                }
+            }
+        });
+        
+        document.addEventListener('DOMContentLoaded', initTelegramApp);
+        
+        // Автообновление каждые 17 часов (для демо - каждую минуту)
+        // В продакшене используй 17 * 60 * 60 * 1000
+        setInterval(() => {
+            console.log('Автообновление предложений...');
+            loadOffers();
+        }, 17 * 60 * 60 * 1000); // 17 часов
     </script>
 </body>
 </html>
