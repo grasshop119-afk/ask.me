@@ -1,281 +1,31 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lottie Fix</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            background-color: #000000;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-family: Arial, sans-serif;
-            color: white;
-        }
-        
-        #animation-container {
-            width: 300px;
-            height: 300px;
-            border: 2px solid #333;
-            margin-bottom: 20px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        #log {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 8px;
-            max-width: 500px;
-            max-height: 200px;
-            overflow-y: auto;
-            font-size: 12px;
-            font-family: monospace;
-            color: #0f0;
-        }
-        
-        .log-entry {
-            margin-bottom: 5px;
-        }
-        
-        .success { color: #0f0; }
-        .error { color: #f00; }
-        .info { color: #ff0; }
-    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js"></script>
+    <style>body {background:#000;margin:0;}</style>
 </head>
 <body>
-    <h2 style="margin-bottom: 20px;">Lottie Quick Fix</h2>
-    
-    <div id="animation-container">
-        <div id="loading">Загрузка...</div>
-    </div>
-    
-    <div id="log"></div>
+    <div id="lottie" style="width:300px;height:300px;margin:auto;"></div>
     
     <script>
-        const log = document.getElementById('log');
-        
-        function addLog(message, type = 'info') {
-            const entry = document.createElement('div');
-            entry.className = `log-entry ${type}`;
-            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-            log.appendChild(entry);
-            log.scrollTop = log.scrollHeight;
-            console.log(`[${type.toUpperCase()}] ${message}`);
-        }
-        
-        async function tryLoadAnimation() {
-            addLog('Начинаем загрузку...', 'info');
-            
-            // Пробуем разные подходы
-            
-            // 1. Сначала попробуем как сырые данные
-            try {
-                addLog('Попытка 1: Загрузка как сырые данные...', 'info');
-                await loadAsRawData();
-                return;
-            } catch (error) {
-                addLog(`Попытка 1 провалилась: ${error.message}`, 'error');
-            }
-            
-            // 2. Попробуем как Base64
-            try {
-                addLog('Попытка 2: Конвертация в Base64...', 'info');
-                await loadAsBase64();
-                return;
-            } catch (error) {
-                addLog(`Попытка 2 провалилась: ${error.message}`, 'error');
-            }
-            
-            // 3. Попробуем просто показать файл как изображение
-            try {
-                addLog('Попытка 3: Показать как статичное изображение...', 'info');
-                await showAsImage();
-                return;
-            } catch (error) {
-                addLog(`Попытка 3 провалилась: ${error.message}`, 'error');
-            }
-            
-            addLog('Все попытки провалились :(', 'error');
-        }
-        
-        async function loadAsRawData() {
-            const response = await fetch('Animations/CTree.lottie');
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-            
-            const buffer = await response.arrayBuffer();
-            addLog(`Получен буфер ${buffer.byteLength} байт`, 'info');
-            
-            // Пробуем разобрать как JSON
-            try {
-                const decoder = new TextDecoder('utf-8');
-                const text = decoder.decode(buffer);
-                addLog(`Текст файла (первые 200 символов): ${text.substring(0, 200)}`, 'info');
-                
-                // Проверяем, это JSON или бинарный
-                if (text.trim().startsWith('{') || text.trim().startsWith('[')) {
-                    addLog('Это похоже на JSON!', 'success');
-                    const animationData = JSON.parse(text);
-                    renderLottie(animationData);
-                } else {
-                    throw new Error('Не JSON формат');
-                }
-            } catch (error) {
-                addLog(`Не JSON: ${error.message}`, 'error');
-                
-                // Пробуем как бинарный .lottie
-                try {
-                    await loadLottiePlayer(buffer);
-                } catch (lottieError) {
-                    throw new Error(`Бинарный формат тоже не сработал: ${lottieError.message}`);
-                }
-            }
-        }
-        
-        async function loadLottiePlayer(buffer) {
-            addLog('Попытка использовать lottie-web с буфером...', 'info');
-            
-            // Создаем Blob URL
-            const blob = new Blob([buffer], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            
-            // Динамически загружаем lottie-web
-            return new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js';
-                script.onload = () => {
-                    addLog('Lottie загружен, пытаемся воспроизвести...', 'info');
-                    try {
-                        lottie.loadAnimation({
-                            container: document.getElementById('animation-container'),
-                            renderer: 'svg',
-                            loop: true,
-                            autoplay: true,
-                            path: url
-                        });
-                        addLog('Lottie анимация запущена!', 'success');
-                        document.getElementById('loading').style.display = 'none';
-                        resolve();
-                    } catch (error) {
-                        reject(error);
-                    }
-                };
-                script.onerror = reject;
-                document.head.appendChild(script);
-            });
-        }
-        
-        async function loadAsBase64() {
-            const response = await fetch('Animations/CTree.lottie');
-            const buffer = await response.arrayBuffer();
-            
-            // Конвертируем в base64
-            const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
-            const dataUrl = `data:application/json;base64,${base64}`;
-            
-            addLog('Создан Data URL', 'info');
-            
-            // Пробуем загрузить
-            return new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js';
-                script.onload = () => {
-                    try {
-                        lottie.loadAnimation({
-                            container: document.getElementById('animation-container'),
-                            renderer: 'svg',
-                            loop: true,
-                            autoplay: true,
-                            path: dataUrl
-                        });
-                        addLog('Анимация запущена через Base64!', 'success');
-                        document.getElementById('loading').style.display = 'none';
-                        resolve();
-                    } catch (error) {
-                        reject(error);
-                    }
-                };
-                script.onerror = reject;
-                document.head.appendChild(script);
-            });
-        }
-        
-        async function showAsImage() {
-            // Пробуем показать как обычное изображение
-            const container = document.getElementById('animation-container');
-            container.innerHTML = `
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
-                    <div style="color: #888; margin-bottom: 10px;">Lottie файл не загружается</div>
-                    <div style="color: #666; font-size: 11px;">Файл: CTree.lottie (13 KB)</div>
-                    <div style="color: #666; font-size: 11px;">Попробуйте конвертировать в JSON</div>
-                </div>
-            `;
-            addLog('Показано статичное сообщение', 'info');
-        }
-        
-        function renderLottie(animationData) {
-            // Загружаем lottie только если нужно
-            if (typeof lottie === 'undefined') {
-                const script = document.createElement('script');
-                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js';
-                script.onload = () => {
-                    doRenderLottie(animationData);
-                };
-                document.head.appendChild(script);
-            } else {
-                doRenderLottie(animationData);
-            }
-        }
-        
-        function doRenderLottie(animationData) {
-            try {
+        // Пробуем как JSON (переименуй файл в .json)
+        fetch('Animations/CTree.json')
+            .then(r => r.json())
+            .then(data => {
                 lottie.loadAnimation({
-                    container: document.getElementById('animation-container'),
+                    container: document.getElementById('lottie'),
                     renderer: 'svg',
                     loop: true,
                     autoplay: true,
-                    animationData: animationData
+                    animationData: data
                 });
-                addLog('Анимация успешно загружена!', 'success');
-                document.getElementById('loading').style.display = 'none';
-            } catch (error) {
-                addLog(`Ошибка рендеринга: ${error.message}`, 'error');
-            }
-        }
-        
-        // Запускаем при загрузке
-        window.addEventListener('load', () => {
-            setTimeout(tryLoadAnimation, 500);
-        });
-        
-        // Дополнительно: кнопка для ручного теста
-        const testBtn = document.createElement('button');
-        testBtn.textContent = 'Тест загрузки';
-        testBtn.style.cssText = `
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 10px 15px;
-            background: #007AFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        `;
-        testBtn.onclick = tryLoadAnimation;
-        document.body.appendChild(testBtn);
+            })
+            .catch(err => {
+                console.error('Ошибка:', err);
+                document.getElementById('lottie').innerHTML = 
+                    '<div style="color:white;text-align:center;padding:20px;">' +
+                    'Переименуй CTree.lottie в CTree.json</div>';
+            });
     </script>
 </body>
 </html>
