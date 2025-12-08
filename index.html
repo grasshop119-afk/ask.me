@@ -3,474 +3,400 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Предложения - Chibeki</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>Рынок - Chibeki</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js"></script>
     <style>
-        * {
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-            box-sizing: border-box;
+        * { 
+            margin: 0; padding: 0; 
+            user-select: none; 
+            -webkit-tap-highlight-color: transparent; 
+            box-sizing: border-box; 
         }
         
-        body {
+        body { 
+            background: #1F2021; 
+            color: white; 
+            font-family: -apple-system, sans-serif; 
+        }
+
+        .header-image {
+            width: 100%;
+            height: auto;
+            display: block;
             margin: 0;
             padding: 0;
-            background: #000;
-            color: white;
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            overflow-x: hidden;
         }
 
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 52px;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(20px);
-            display: flex;
-            align-items: center;
-            padding: 0 16px;
-            z-index: 100;
-            border-bottom: 0.5px solid #222;
+        .main-content { 
+            position: absolute; 
+            top: 0; 
+            bottom: 0; 
+            left: 0; 
+            right: 0; 
+            overflow-y: auto; 
+        }
+        .main-content::-webkit-scrollbar { 
+            display: none; 
+        }
+        
+        .main-screen { 
+            padding: 16px; 
+            padding-top: 0;
         }
 
-        .back-button {
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 8px;
-        }
-
-        .back-button img {
-            width: 24px;
-            height: 24px;
-            filter: invert(1);
-            opacity: 0.9;
-        }
-
-        .logo {
-            height: 32px;
-        }
-
-        .main-content {
-            margin-top: 52px;
-            padding: 16px;
-        }
-
-        .section-title {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 16px;
+        .page-title {
+            font-size: 32px;
+            font-weight: 800;
+            margin: 12px 0 0 0;
             color: #FFFFFF;
-            text-align: center;
-            font-family: 'Montserrat', -apple-system, sans-serif;
+            letter-spacing: -0.5px;
+            padding-left: 4px;
         }
 
-        .refresh-timer {
-            text-align: center;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 14px;
-            margin-bottom: 24px;
-            padding: 8px 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            display: inline-block;
-            margin-left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .refresh-timer .time {
-            color: var(--accent-color, #007AFF);
-            font-weight: 600;
-        }
-
-        .offer-card {
-            background: #1A1A1A;
-            border-radius: 24px;
-            border: 1px solid #222;
-            padding: 20px;
-            margin-bottom: 24px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-        }
-
-        .offer-header {
-            margin-bottom: 16px;
-        }
-
-        .offer-title {
-            font-family: 'Montserrat', -apple-system, sans-serif;
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .offer-description {
-            font-size: 15px;
-            color: rgba(255, 255, 255, 0.7);
-            line-height: 1.4;
-        }
-
-        .stickers-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-top: 16px;
-        }
-
-        .sticker-item {
-            background: #000;
-            border-radius: 16px;
-            border: 1px solid #333;
-            padding: 12px;
-            text-align: center;
-            transition: transform 0.2s ease, background-color 0.2s ease;
-        }
-
-        .sticker-item:active {
-            transform: scale(0.96);
-            background: #111;
-        }
-
-        .sticker-animation {
-            width: 100%;
-            height: 100px;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            overflow: hidden;
-            background: rgba(255, 255, 255, 0.03);
-        }
-
-        .sticker-name {
-            font-size: 12px;
-            font-weight: 600;
-            color: #FFFFFF;
-            margin-bottom: 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .sticker-price {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--accent-color, #007AFF);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-        }
-
-        .sticker-price::before {
-            content: '';
-            display: block;
-            width: 12px;
-            height: 12px;
-            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
-            border-radius: 50%;
-        }
-
-        .buy-button {
-            width: 100%;
-            background: linear-gradient(135deg, var(--accent-color, #007AFF) 0%, #0056CC 100%);
-            border: none;
-            border-radius: 16px;
-            padding: 16px;
-            color: white;
-            font-size: 16px;
-            font-weight: 600;
-            margin-top: 20px;
-            cursor: pointer;
-            transition: opacity 0.2s ease;
-        }
-
-        .buy-button:active {
-            opacity: 0.8;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 16px;
-        }
-
-        .loading {
+        .empty-container {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 40px;
-            gap: 16px;
+            height: calc(100vh - 280px);
+            margin-top: 20px;
         }
 
-        .loading-wheel {
-            width: 30px;
-            height: 30px;
-            border: 3px solid rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            border-top-color: rgba(255, 255, 255, 0.8);
-            animation: spin 0.8s linear infinite;
+        .sticker-container {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 16px;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .empty-text {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 18px;
+            font-weight: 500;
+            line-height: 1.3;
         }
 
-        :root {
-            --accent-color: #007AFF;
+        .create-button {
+            background: var(--accent-color); 
+            color: white; 
+            border: none; 
+            border-radius: 14px;
+            padding: 12px; 
+            width: 100%; 
+            font-size: 16px; 
+            font-weight: 500;
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px;
+            cursor: pointer;
+            margin-top: 20px;
         }
 
+        .create-button:active {
+            opacity: 0.8;
+        }
+
+        .add-idea-btn-icon { 
+            width: 20px; 
+            height: 20px; 
+            filter: invert(1); 
+        }
+
+        /* Модалка создания лавки */
+        .modal-overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: #1F2021; 
+            z-index: 1000; 
+            display: none; 
+        }
+        .modal-overlay.active { 
+            display: block; 
+        }
+        
+        .modal-header { 
+            height: 52px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 0 16px; 
+        }
+        .modal-title { 
+            font-size: 17px; 
+            font-weight: 600; 
+            color: #FFFFFF; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+        }
+        .modal-title-icon { 
+            width: 20px; 
+            height: 20px; 
+            filter: invert(1); 
+        }
+        
+        .modal-close { 
+            width: 24px; 
+            height: 24px; 
+            opacity: 0.8; 
+            cursor: pointer; 
+            position: relative; 
+        }
+        .modal-close::before, .modal-close::after { 
+            content: ''; 
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            width: 18px; 
+            height: 2px; 
+            background: white; 
+        }
+        .modal-close::before { 
+            transform: translate(-50%, -50%) rotate(45deg); 
+        }
+        .modal-close::after { 
+            transform: translate(-50%, -50%) rotate(-45deg); 
+        }
+        
+        .modal-content { 
+            padding: 20px 16px; 
+        }
+        
+        .input-group { 
+            margin-bottom: 16px; 
+        }
+        .input-label { 
+            font-size: 15px; 
+            font-weight: 500; 
+            color: #FFFFFF; 
+            margin-bottom: 8px; 
+        }
+        .input-field {
+            width: 100%; 
+            background: transparent; 
+            border: 1px solid #353637; 
+            border-radius: 10px;
+            padding: 12px; 
+            font-size: 16px; 
+            color: white; 
+            font-family: inherit;
+        }
+        
+        .input-field:focus { 
+            outline: none; 
+            border-color: var(--accent-color); 
+        }
+        
+        .char-counter { 
+            text-align: right; 
+            font-size: 12px; 
+            color: rgba(255, 255, 255, 0.5); 
+            margin-top: 4px; 
+        }
+        
+        .modal-btn {
+            width: 100%; 
+            padding: 14px; 
+            border-radius: 10px; 
+            font-size: 16px; 
+            font-weight: 500;
+            border: none; 
+            cursor: pointer; 
+            background: var(--accent-color); 
+            color: white;
+        }
+        
+        :root { 
+            --accent-color: #007AFF; 
+        }
+        
         @media (max-width: 375px) {
-            .section-title {
+            .page-title {
+                font-size: 28px;
+                margin-top: 10px;
+            }
+            
+            .sticker-container {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .empty-text {
+                font-size: 16px;
+            }
+            
+            .create-button {
+                padding: 12px;
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 320px) {
+            .page-title {
                 font-size: 24px;
+                margin-top: 8px;
             }
             
-            .offer-title {
-                font-size: 20px;
+            .sticker-container {
+                width: 90px;
+                height: 90px;
             }
             
-            .stickers-grid {
-                gap: 8px;
+            .empty-text {
+                font-size: 15px;
             }
             
-            .sticker-animation {
-                height: 80px;
+            .create-button {
+                padding: 12px;
+                font-size: 15px;
             }
         }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js"></script>
 </head>
 <body>
-    <div class="header">
-        <div class="back-button" onclick="goBack()">
-            <img src="https://img.icons8.com/?size=100&id=83198&format=png&color=000000" alt="Назад">
-        </div>
-        <img src="https://i.ibb.co/zTB331HR/image.png" alt="Chibeki" class="logo">
-    </div>
-
+    <img src="https://i.ibb.co/SGSF7LC/image.png" alt="Рынок" class="header-image">
+    
     <div class="main-content">
-        <div class="section-title">Предложения</div>
-        
-        <div class="refresh-timer" id="refreshTimer">
-            Обновление через: <span class="time" id="timeLeft">23:59:59</span>
-        </div>
-        
-        <div class="offer-card">
-            <div class="offer-header">
-                <div class="offer-title">Предложения мусорщиков</div>
-                <div class="offer-description">
-                    Джавы обновляют свой ассортимент каждые 17 часов!<br>
-                    Здесь можно найти что-нибудь годное
-                </div>
+        <div class="main-screen">
+            <div class="page-title">Рынок</div>
+            
+            <div class="empty-container">
+                <div class="sticker-container" id="martnthSticker"></div>
+                <div class="empty-text">Лавок пока нет</div>
             </div>
             
-            <div class="stickers-grid" id="stickersGrid">
-                <div class="loading">
-                    <div class="loading-wheel"></div>
-                    <div>Загрузка предложений...</div>
-                </div>
-            </div>
-            
-            <button class="buy-button" onclick="buyAll()">
-                Купить все за <span id="totalPrice">0</span>
+            <button class="create-button" onclick="openCreateModal()">
+                <img src="https://images.icon-icons.com/916/PNG/512/Plus_icon-icons.com_71848.png" 
+                     class="add-idea-btn-icon">Создать лавку
             </button>
         </div>
     </div>
 
+    <!-- Модалка создания лавки -->
+    <div class="modal-overlay" id="createModal">
+        <div class="modal-header">
+            <div class="modal-title">
+                <img src="https://img.icons8.com/?size=100&id=dosi6bTgHIrs&format=png&color=000000" 
+                     class="modal-title-icon">Создание лавки
+            </div>
+            <div class="modal-close" onclick="closeCreateModal()"></div>
+        </div>
+        <div class="modal-content">
+            <div class="input-group">
+                <div class="input-label">Название</div>
+                <input type="text" 
+                       class="input-field" 
+                       id="shopNameInput"
+                       placeholder="Назови лавку"
+                       maxlength="16">
+                <div class="char-counter" id="charCounter">0/16</div>
+            </div>
+            <div class="input-group">
+                <div class="input-label">Описание</div>
+                <textarea class="input-field" 
+                          id="shopDescriptionInput"
+                          placeholder="Расскажи о своей лавке..."
+                          style="min-height: 100px;"></textarea>
+            </div>
+            <button class="modal-btn" onclick="createShop()">Создать</button>
+        </div>
+    </div>
+
     <script>
-        const tg = window.Telegram.WebApp;
-        let currentStickers = [];
-        
-        // Список доступных стикеров (замени на реальные имена файлов)
-        const availableStickers = [
-            { name: "CTree", file: "CTree.json" },
-            { name: "Fireworks", file: "Fireworks.json" },
-            { name: "Rocket", file: "Rocket.json" },
-            { name: "Heart", file: "Heart.json" },
-            { name: "Star", file: "Star.json" },
-            { name: "Coin", file: "Coin.json" },
-            { name: "Diamond", file: "Diamond.json" },
-            { name: "Crystal", file: "Crystal.json" }
-        ];
-        
-        function initTelegramApp() {
-            tg.ready();
-            tg.expand();
-            tg.setHeaderColor('#000000');
-            tg.setBackgroundColor('#000000');
+        function init() {
+            // Загружаем Lottie анимацию
+            loadMartnthAnimation();
             
-            if (tg.themeParams.accent_text_color) {
-                document.documentElement.style.setProperty('--accent-color', tg.themeParams.accent_text_color);
+            // Настройка ввода названия лавки
+            setupInputHandlers();
+        }
+        
+        function loadMartnthAnimation() {
+            try {
+                lottie.loadAnimation({
+                    container: document.getElementById('martnthSticker'),
+                    renderer: 'svg',
+                    loop: true,
+                    autoplay: true,
+                    path: 'Animations/MartNth.json'
+                });
+            } catch (error) {
+                console.error('Ошибка загрузки анимации:', error);
+                // Запасной вариант
+                document.getElementById('martnthSticker').innerHTML = 
+                    '<div style="color:rgba(255,255,255,0.3);font-size:14px;text-align:center;padding-top:40px;">MartNth</div>';
             }
-            
-            loadOffers();
-            startCountdown();
         }
         
-        function goBack() {
-            tg.HapticFeedback.impactOccurred('light');
-            tg.close();
-        }
-        
-        function getRandomStickers(count = 3) {
-            // Перемешиваем массив и берем первые count элементов
-            const shuffled = [...availableStickers].sort(() => Math.random() - 0.5);
-            return shuffled.slice(0, count);
-        }
-        
-        function getRandomPrice() {
-            // Случайная цена от 78 до 145
-            return Math.floor(Math.random() * (145 - 78 + 1)) + 78;
-        }
-        
-        function loadOffers() {
-            const stickersGrid = document.getElementById('stickersGrid');
+        function setupInputHandlers() {
+            const nameInput = document.getElementById('shopNameInput');
+            const charCounter = document.getElementById('charCounter');
             
-            // Генерируем случайные стикеры
-            currentStickers = getRandomStickers(3).map(sticker => ({
-                ...sticker,
-                price: getRandomPrice()
-            }));
-            
-            stickersGrid.innerHTML = '';
-            
-            // Загружаем каждый стикер
-            currentStickers.forEach((sticker, index) => {
-                const item = document.createElement('div');
-                item.className = 'sticker-item';
-                item.dataset.index = index;
+            nameInput.addEventListener('input', function() {
+                const length = this.value.length;
+                charCounter.textContent = length + '/16';
                 
-                item.innerHTML = `
-                    <div class="sticker-animation" id="animation${index}"></div>
-                    <div class="sticker-name">${sticker.name}</div>
-                    <div class="sticker-price">${sticker.price}</div>
-                `;
-                
-                stickersGrid.appendChild(item);
-                
-                // Загружаем Lottie анимацию
-                setTimeout(() => {
-                    try {
-                        lottie.loadAnimation({
-                            container: document.getElementById(`animation${index}`),
-                            renderer: 'svg',
-                            loop: true,
-                            autoplay: true,
-                            path: `Animations/${sticker.file}`
-                        });
-                    } catch (error) {
-                        console.error(`Ошибка загрузки ${sticker.file}:`, error);
-                        // Запасной вариант - показываем текст
-                        document.getElementById(`animation${index}`).innerHTML = 
-                            `<div style="color:rgba(255,255,255,0.3);font-size:12px;">${sticker.name}</div>`;
-                    }
-                }, 100 * (index + 1));
+                if (length > 16) {
+                    this.value = this.value.substring(0, 16);
+                    charCounter.textContent = '16/16';
+                }
             });
             
-            // Обновляем общую цену
-            updateTotalPrice();
+            // Инициализация счетчика
+            charCounter.textContent = nameInput.value.length + '/16';
         }
         
-        function updateTotalPrice() {
-            const total = currentStickers.reduce((sum, sticker) => sum + sticker.price, 0);
-            document.getElementById('totalPrice').textContent = total;
+        function openCreateModal() {
+            // Haptic feedback будет в телеграм версии
+            document.getElementById('createModal').classList.add('active');
         }
         
-        function startCountdown() {
-            function updateCountdown() {
-                const now = new Date();
-                const moscowTime = new Date(now.toLocaleString("en-US", {timeZone: "Europe/Moscow"}));
-                
-                // Время до следующего обновления (каждые 17 часов)
-                const updateInterval = 17 * 60 * 60 * 1000; // 17 часов в миллисекундах
-                const startTime = new Date(moscowTime.getFullYear(), moscowTime.getMonth(), moscowTime.getDate(), 0, 0, 0);
-                const elapsed = moscowTime - startTime;
-                const cycles = Math.floor(elapsed / updateInterval);
-                const nextUpdate = new Date(startTime.getTime() + (cycles + 1) * updateInterval);
-                
-                let diff = nextUpdate - moscowTime;
-                
-                // Если время обновления прошло, обновляем сразу
-                if (diff <= 0) {
-                    tg.HapticFeedback.impactOccurred('medium');
-                    loadOffers();
-                    // Следующее обновление через 17 часов
-                    diff = updateInterval;
-                }
-                
-                const hours = Math.floor(diff / (1000 * 60 * 60));
-                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-                
-                document.getElementById('timeLeft').textContent = 
-                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        function closeCreateModal() {
+            // Haptic feedback будет в телеграм версии
+            document.getElementById('createModal').classList.remove('active');
+        }
+        
+        function createShop() {
+            const nameInput = document.getElementById('shopNameInput');
+            const descriptionInput = document.getElementById('shopDescriptionInput');
+            
+            const shopName = nameInput.value.trim();
+            const shopDescription = descriptionInput.value.trim();
+            
+            if (!shopName) {
+                alert('Введите название лавки!');
+                return;
             }
             
-            updateCountdown();
-            setInterval(updateCountdown, 1000);
-        }
-        
-        function buyAll() {
-            tg.HapticFeedback.impactOccurred('heavy');
+            if (shopName.length < 3) {
+                alert('Название должно быть не менее 3 символов');
+                return;
+            }
             
-            const totalPrice = currentStickers.reduce((sum, sticker) => sum + sticker.price, 0);
-            
-            tg.showAlert(`Вы хотите купить все стикеры за ${totalPrice}?`, () => {
-                // Здесь будет логика покупки
-                tg.showAlert(`Покупка на ${totalPrice} успешно выполнена!`);
-                // Обновляем предложения после покупки
-                setTimeout(() => {
-                    loadOffers();
-                }, 1000);
+            // Здесь будет логика создания лавки
+            console.log('Создание лавки:', {
+                name: shopName,
+                description: shopDescription
             });
+            
+            // Показываем подтверждение
+            alert(`Лавка "${shopName}" успешно создана!`);
+            
+            closeCreateModal();
+            
+            // Очищаем поля
+            nameInput.value = '';
+            descriptionInput.value = '';
+            document.getElementById('charCounter').textContent = '0/16';
+            
+            // Здесь можно обновить интерфейс, показать созданную лавку
         }
         
-        // Обработчик клика по отдельному стикеру
-        document.addEventListener('click', function(e) {
-            const stickerItem = e.target.closest('.sticker-item');
-            if (stickerItem) {
-                const index = parseInt(stickerItem.dataset.index);
-                const sticker = currentStickers[index];
-                
-                if (sticker) {
-                    tg.HapticFeedback.impactOccurred('light');
-                    tg.showConfirm(`Купить "${sticker.name}" за ${sticker.price}?`, (confirmed) => {
-                        if (confirmed) {
-                            tg.showAlert(`Стикер "${sticker.name}" куплен за ${sticker.price}!`);
-                            // Можно удалить купленный стикер из списка
-                            currentStickers.splice(index, 1);
-                            loadOffers();
-                        }
-                    });
-                }
-            }
-        });
-        
-        document.addEventListener('DOMContentLoaded', initTelegramApp);
-        
-        // Автообновление каждые 17 часов (для демо - каждую минуту)
-        // В продакшене используй 17 * 60 * 60 * 1000
-        setInterval(() => {
-            console.log('Автообновление предложений...');
-            loadOffers();
-        }, 17 * 60 * 60 * 1000); // 17 часов
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
