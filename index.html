@@ -362,7 +362,7 @@
         <!-- Предпросмотр выбранного -->
         <div class="chibi-preview" id="chibiPreview">
             <div class="close-preview" onclick="closePreview()">
-                <img src="https://img.icons8.com/?size=100&id=83198&format=png&color=000000" class="close-icon">
+                <img src="https://img.icons8.com/?size=100&id=95771&format=png&color=000000" class="close-icon">
             </div>
             
             <img src="" alt="" class="preview-image" id="previewImage">
@@ -376,7 +376,7 @@
                            class="price-input" 
                            id="priceInput" 
                            placeholder="100"
-                           min="1"
+                           min="30"
                            max="9999">
                 </div>
             </div>
@@ -394,7 +394,7 @@
         };
         
         let selectedChibi = null;
-        let chibiCounts = {}; // Хранит количество каждого чибика
+        let chibiCounts = {};
         
         function init() {
             tg.ready();
@@ -430,26 +430,20 @@
             try {
                 const user = tg.initDataUnsafe?.user;
                 
-                // Демо данные - с дубликатами для подсчета
-                userData.common.all = ['Ангел', 'Боба Фетт', 'Ведьма', 'Гном', 'Дракон', 'Единорог', 'Жук', 'Зомби', 'Император', 'Котик', 'Лис', 'Медведь'];
-                userData.secret.all = ['Тень', 'Феникс', 'Цербер', 'Щит'];
-                userData.prize.all = ['Артефакт', 'Бриллиант'];
-                
                 if (user) {
                     await loadUserCollection(user.id);
                 } else {
-                    // Демо: создаем данные с дубликатами
-                    userData.common.collected = ['Ангел', 'Ангел', 'Боба Фетт', 'Боба Фетт', 'Боба Фетт', 'Ведьма', 'Гном', 'Дракон', 'Единорог'];
-                    userData.secret.collected = ['Тень', 'Феникс', 'Феникс'];
-                    userData.prize.collected = ['Артефакт'];
+                    userData.common.collected = [];
+                    userData.secret.collected = [];
+                    userData.prize.collected = [];
                 }
                 
-                // Подсчитываем количество каждого чибика
                 countChibis();
                 
             } catch (error) {
-                userData.common.collected = ['Ангел', 'Ангел', 'Боба Фетт', 'Боба Фетт', 'Боба Фетт', 'Ведьма', 'Гном'];
-                userData.secret.collected = ['Тень'];
+                console.error('Ошибка загрузки данных:', error);
+                userData.common.collected = [];
+                userData.secret.collected = [];
                 userData.prize.collected = [];
                 countChibis();
             }
@@ -458,17 +452,14 @@
         function countChibis() {
             chibiCounts = {};
             
-            // Подсчет обычных чибиков
             userData.common.collected.forEach(name => {
                 chibiCounts[name] = (chibiCounts[name] || 0) + 1;
             });
             
-            // Подсчет секретных чибиков
             userData.secret.collected.forEach(name => {
                 chibiCounts[name] = (chibiCounts[name] || 0) + 1;
             });
             
-            // Подсчет призовых чибиков
             userData.prize.collected.forEach(name => {
                 chibiCounts[name] = (chibiCounts[name] || 0) + 1;
             });
@@ -498,10 +489,7 @@
                     countChibis();
                 }
             } catch (error) {
-                userData.common.collected = userData.common.all.slice(0, 8);
-                userData.secret.collected = userData.secret.all.slice(0, 2);
-                userData.prize.collected = [];
-                countChibis();
+                console.error('Ошибка загрузки коллекции:', error);
             }
         }
         
@@ -530,12 +518,9 @@
             const list = document.getElementById('chibiList');
             list.innerHTML = '';
             
-            // Собираем все уникальные чибики
             const allChibis = [];
             
-            // Собираем имена всех чибиков с их типами
             Object.keys(chibiCounts).forEach(name => {
-                // Определяем тип чибика
                 let type = 'common';
                 if (userData.secret.all.includes(name)) type = 'secret';
                 if (userData.prize.all.includes(name)) type = 'prize';
@@ -547,7 +532,6 @@
                 });
             });
             
-            // Сортируем по алфавиту
             allChibis.sort((a, b) => a.name.localeCompare(b.name));
             
             if (allChibis.length === 0) {
@@ -574,12 +558,10 @@
         function selectChibi(chibi) {
             tg.HapticFeedback.impactOccurred('light');
             
-            // Снимаем выделение со всех
             document.querySelectorAll('.chibi-item').forEach(item => {
                 item.classList.remove('selected');
             });
             
-            // Выделяем выбранный
             const selectedItem = document.querySelector(`[data-index="${chibi.index}"]`);
             if (selectedItem) {
                 selectedItem.classList.add('selected');
@@ -587,10 +569,7 @@
             
             selectedChibi = chibi;
             
-            // Показываем превью
             const preview = document.getElementById('chibiPreview');
-            
-            // Получаем изображение
             const imageUrl = `https://raw.githubusercontent.com/therootishere00-ux/Chibi-bot/main/chibis/${chibi.type}/${chibi.name.replace(/ /g, '_')}.png`;
             
             document.getElementById('previewImage').src = imageUrl;
@@ -604,15 +583,9 @@
             const priceInput = document.getElementById('priceInput');
             const price = parseInt(priceInput.value);
             
-            if (!price || price < 1) {
+            if (!price || price < 30 || price > 9999) {
                 tg.HapticFeedback.notificationOccurred('error');
-                tg.showAlert('Введите корректную цену (от 1 коина)');
-                return;
-            }
-            
-            if (price > 9999) {
-                tg.HapticFeedback.notificationOccurred('error');
-                tg.showAlert('Максимальная цена - 9999 коинов');
+                tg.showAlert('Нет! Введи нормальный прайс');
                 return;
             }
             
@@ -624,7 +597,7 @@
             
             tg.HapticFeedback.impactOccurred('medium');
             
-            // Здесь будет логика выставления лота
+            // Логика выставления лота (заглушка)
             console.log('Выставление лота:', {
                 chibi: selectedChibi.name,
                 type: selectedChibi.type,
@@ -637,11 +610,9 @@
             });
         }
         
-        // Настраиваем input для только цифр
         document.getElementById('priceInput').addEventListener('input', function(e) {
             this.value = this.value.replace(/[^0-9]/g, '');
             
-            // Ограничиваем максимальное значение
             const value = parseInt(this.value) || 0;
             if (value > 9999) {
                 this.value = '9999';
