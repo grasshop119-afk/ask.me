@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Рынок - Chibeki</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js"></script>
     <style>
         * {
             -webkit-touch-callout: none;
@@ -48,6 +49,10 @@
             cursor: pointer;
         }
 
+        .add-button:active {
+            opacity: 0.8;
+        }
+
         .add-icon {
             width: 24px;
             height: 24px;
@@ -62,6 +67,12 @@
             text-align: center;
             width: 100%;
             padding: 20px;
+        }
+
+        .sticker-container {
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 20px;
         }
 
         .empty-text {
@@ -83,7 +94,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.95);
+            background: #000;
             display: none;
             flex-direction: column;
             z-index: 1000;
@@ -108,7 +119,7 @@
             color: #FFFFFF;
         }
 
-        /* Сетка чибиков */
+        /* Сетка чибиков как в основном коде */
         .chibi-grid {
             flex: 1;
             display: grid;
@@ -120,14 +131,18 @@
 
         .chibi-card {
             background: #1A1A1A;
+            border-radius: 22px;
             border: 1px solid #222;
-            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
             overflow: hidden;
-            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
         .chibi-card:active {
             transform: scale(0.98);
+            background: #222;
         }
 
         .chibi-card.selected {
@@ -147,15 +162,47 @@
             object-fit: cover;
         }
 
+        .chibi-info {
+            padding: 12px 8px 8px;
+            position: relative;
+        }
+
         .chibi-name {
             font-size: 13px;
             font-weight: 600;
             color: #FFFFFF;
             text-align: center;
-            padding: 10px 6px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            line-height: 1.2;
+        }
+
+        .locked-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.92);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            backdrop-filter: blur(8px);
+        }
+
+        .locked-icon {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 8px;
+            opacity: 0.7;
+        }
+
+        .locked-text {
+            font-size: 12px;
+            color: #8E8E93;
+            font-weight: 500;
         }
 
         :root {
@@ -172,6 +219,7 @@
     </div>
     
     <div class="empty-container">
+        <div class="sticker-container" id="martnthSticker"></div>
         <div class="empty-text">Лотов пока нет</div>
         <div class="empty-description">Но ничто не мешает тебе стать первым!</div>
     </div>
@@ -189,6 +237,13 @@
     <script>
         const tg = window.Telegram.WebApp;
         
+        // Данные как в основном коде
+        let userData = {
+            common: { collected: [], all: [] },
+            secret: { collected: [], all: [] },
+            prize: { collected: [], all: [] }
+        };
+        
         function init() {
             tg.ready();
             tg.expand();
@@ -200,6 +255,71 @@
             }
             
             tg.BackButton.onClick(closeModal);
+            
+            loadMartnthAnimation();
+            loadUserData();
+        }
+        
+        function loadMartnthAnimation() {
+            try {
+                lottie.loadAnimation({
+                    container: document.getElementById('martnthSticker'),
+                    renderer: 'svg',
+                    loop: true,
+                    autoplay: true,
+                    path: 'Animations/MartNth.json'
+                });
+            } catch (error) {
+                console.error('Ошибка загрузки анимации:', error);
+            }
+        }
+        
+        async function loadUserData() {
+            try {
+                const user = tg.initDataUnsafe?.user;
+                
+                // Демо данные как в основном коде
+                userData.common.all = ['Chibi 1', 'Chibi 2', 'Chibi 3', 'Chibi 4', 'Chibi 5', 'Chibi 6', 'Chibi 7', 'Chibi 8', 'Chibi 9', 'Chibi 10', 'Chibi 11', 'Chibi 12'];
+                userData.secret.all = ['Secret 1', 'Secret 2', 'Secret 3', 'Secret 4'];
+                userData.prize.all = ['Prize 1', 'Prize 2', 'Prize 3'];
+                
+                if (user) {
+                    await loadUserCollection(user.id);
+                }
+                
+            } catch (error) {
+                userData.common.collected = userData.common.all.slice(0, 4);
+                userData.secret.collected = [];
+                userData.prize.collected = [];
+            }
+        }
+        
+        async function loadUserCollection(telegramId) {
+            try {
+                const response = await fetch('https://chibi-bot-3d4x.onrender.com/get_user_collection', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ telegram_id: telegramId })
+                });
+
+                if (response.ok) {
+                    const collection = await response.json();
+                    
+                    userData.common.collected = collection.common || [];
+                    userData.secret.collected = collection.secret || [];
+                    userData.prize.collected = collection.prize || [];
+                    
+                    if (collection.all_common) userData.common.all = collection.all_common;
+                    if (collection.all_secret) userData.secret.all = collection.all_secret;
+                    if (collection.all_prize) userData.prize.all = collection.all_prize;
+                }
+            } catch (error) {
+                userData.common.collected = userData.common.all.slice(0, 4);
+                userData.secret.collected = [];
+                userData.prize.collected = [];
+            }
         }
         
         function openModal() {
@@ -207,17 +327,7 @@
             document.getElementById('modal').classList.add('active');
             tg.BackButton.show();
             
-            // Демо данные чибиков
-            const demoChibis = [
-                { id: 1, name: "Chibi 1", image: "https://raw.githubusercontent.com/therootishere00-ux/Chibi-bot/main/chibis/common/Chibi_1.png" },
-                { id: 2, name: "Chibi 2", image: "https://raw.githubusercontent.com/therootishere00-ux/Chibi-bot/main/chibis/common/Chibi_2.png" },
-                { id: 3, name: "Chibi 3", image: "https://raw.githubusercontent.com/therootishere00-ux/Chibi-bot/main/chibis/common/Chibi_3.png" },
-                { id: 4, name: "Chibi 4", image: "https://raw.githubusercontent.com/therootishere00-ux/Chibi-bot/main/chibis/common/Chibi_4.png" },
-                { id: 5, name: "Chibi 5", image: "https://raw.githubusercontent.com/therootishere00-ux/Chibi-bot/main/chibis/common/Chibi_5.png" },
-                { id: 6, name: "Chibi 6", image: "https://raw.githubusercontent.com/therootishere00-ux/Chibi-bot/main/chibis/common/Chibi_6.png" },
-            ];
-            
-            renderChibis(demoChibis);
+            renderChibis();
         }
         
         function closeModal() {
@@ -226,38 +336,61 @@
             tg.BackButton.hide();
         }
         
-        function renderChibis(chibis) {
+        function renderChibis() {
             const grid = document.getElementById('chibiGrid');
             grid.innerHTML = '';
             
-            chibis.forEach(chibi => {
+            // Показываем обычных чибиков как в основном коде
+            userData.common.all.forEach((chibiName) => {
+                const isCollected = userData.common.collected.includes(chibiName);
+                
                 const card = document.createElement('div');
                 card.className = 'chibi-card';
+                card.onclick = () => {
+                    if (isCollected) {
+                        tg.HapticFeedback.impactOccurred('light');
+                        selectChibi(card, chibiName, 'common');
+                    }
+                };
+                
+                const imageUrl = `https://raw.githubusercontent.com/therootishere00-ux/Chibi-bot/main/chibis/common/${chibiName.replace(/ /g, '_')}.png`;
+                
                 card.innerHTML = `
                     <div class="chibi-image-container">
-                        <img src="${chibi.image}" alt="${chibi.name}" class="chibi-image">
+                        <img src="${imageUrl}" alt="${chibiName}" class="chibi-image">
                     </div>
-                    <div class="chibi-name">${chibi.name}</div>
+                    ${isCollected ? `
+                        <div class="chibi-info">
+                            <div class="chibi-name">${chibiName}</div>
+                        </div>
+                    ` : ''}
                 `;
                 
-                card.onclick = () => selectChibi(chibi);
+                if (!isCollected) {
+                    const lockOverlay = document.createElement('div');
+                    lockOverlay.className = 'locked-overlay';
+                    lockOverlay.innerHTML = `
+                        <img src="https://img.icons8.com/?size=100&id=wKLATegpDP1G&format=png&color=000000" alt="Lock" class="locked-icon" style="filter: invert(0.6);">
+                        <div class="locked-text">Заблокировано</div>
+                    `;
+                    card.appendChild(lockOverlay);
+                }
+                
                 grid.appendChild(card);
             });
         }
         
-        function selectChibi(chibi) {
-            tg.HapticFeedback.impactOccurred('light');
-            
+        function selectChibi(card, chibiName, type) {
             // Снимаем выделение со всех
-            document.querySelectorAll('.chibi-card').forEach(card => {
-                card.classList.remove('selected');
+            document.querySelectorAll('.chibi-card').forEach(c => {
+                c.classList.remove('selected');
             });
             
             // Выделяем выбранный
-            event.currentTarget.classList.add('selected');
+            card.classList.add('selected');
             
             // Здесь будет логика выбора чибика для продажи
-            console.log('Выбран чибик:', chibi.name);
+            console.log('Выбран чибик:', { name: chibiName, type: type });
         }
         
         document.addEventListener('DOMContentLoaded', init);
