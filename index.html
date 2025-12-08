@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Рынок - Chibeki</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js"></script>
     <style>
         * {
             -webkit-touch-callout: none;
@@ -23,50 +22,30 @@
             background: #000;
             color: white;
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            overflow-x: hidden;
         }
 
-        .header-image {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        .main-content {
+        .header {
             padding: 16px;
-        }
-
-        .header-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-top: 26px;
-            margin-bottom: 24px;
         }
 
         .page-title {
             font-size: 32px;
             font-weight: 800;
             color: #FFFFFF;
-            letter-spacing: -0.5px;
         }
 
         .add-button {
             width: 44px;
             height: 44px;
             background: var(--accent-color, #007AFF);
-            border: none;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: opacity 0.2s ease;
-            flex-shrink: 0;
-        }
-
-        .add-button:active {
-            opacity: 0.8;
         }
 
         .add-icon {
@@ -76,169 +55,28 @@
         }
 
         .empty-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: calc(100vh - 200px);
-        }
-
-        .sticker-container {
-            width: 140px;
-            height: 140px;
-            margin-bottom: 20px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: 100%;
+            padding: 20px;
         }
 
         .empty-text {
-            text-align: center;
-            color: #FFFFFF;
             font-size: 18px;
             font-weight: 500;
+            color: #FFFFFF;
             margin-bottom: 8px;
         }
 
         .empty-description {
-            text-align: center;
+            font-size: 15px;
             color: rgba(255, 255, 255, 0.7);
-            font-size: 15px;
-            margin-bottom: 30px;
-            max-width: 280px;
-            line-height: 1.4;
         }
 
-        /* Шоп карточка */
-        .shop-card {
-            background: #1A1A1A;
-            border: 1px solid #222;
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 12px;
-        }
-
-        .shop-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .shop-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            background: #000;
-            border: 1.5px solid var(--accent-color);
-            overflow: hidden;
-            margin-right: 12px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .shop-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .default-avatar {
-            width: 24px;
-            height: 24px;
-            filter: invert(0.6);
-        }
-
-        .shop-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .shop-name {
-            font-size: 18px;
-            font-weight: 600;
-            color: #FFFFFF;
-            margin-bottom: 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .shop-owner {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.6);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .shop-items-title {
-            font-size: 15px;
-            font-weight: 500;
-            color: rgba(255, 255, 255, 0.9);
-            margin-bottom: 12px;
-        }
-
-        .shop-items {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-        }
-
-        .no-items {
-            text-align: center;
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 14px;
-            padding: 24px 0;
-            grid-column: 1 / -1;
-            font-style: italic;
-        }
-
-        .item-card {
-            background: #000;
-            border: 1px solid #222;
-            border-radius: 12px;
-            overflow: hidden;
-            cursor: pointer;
-        }
-
-        .item-card:active {
-            transform: scale(0.98);
-        }
-
-        .item-image-container {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 1/1;
-            overflow: hidden;
-        }
-
-        .item-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .item-info {
-            padding: 8px;
-            text-align: center;
-        }
-
-        .item-name {
-            font-size: 12px;
-            font-weight: 600;
-            color: #FFFFFF;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-bottom: 4px;
-        }
-
-        .item-price {
-            font-size: 13px;
-            color: var(--accent-color);
-            font-weight: 600;
-        }
-
-        /* Модалка выбора чибика */
+        /* Модалка */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -246,18 +84,13 @@
             right: 0;
             bottom: 0;
             background: rgba(0, 0, 0, 0.95);
-            backdrop-filter: blur(10px);
-            display: flex;
+            display: none;
             flex-direction: column;
             z-index: 1000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
         }
 
         .modal-overlay.active {
-            opacity: 1;
-            pointer-events: all;
+            display: flex;
         }
 
         .modal-header {
@@ -266,8 +99,6 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(20px);
             border-bottom: 0.5px solid #222;
         }
 
@@ -277,327 +108,88 @@
             color: #FFFFFF;
         }
 
-        .modal-close {
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--accent-color);
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-        }
-
-        .modal-close:active {
-            opacity: 0.8;
-        }
-
         /* Сетка чибиков */
-        .chibi-selector-grid {
+        .chibi-grid {
             flex: 1;
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 12px;
             padding: 16px;
             overflow-y: auto;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .chibi-selector-grid.blurred {
-            filter: blur(8px);
-            opacity: 0.5;
-            pointer-events: none;
-        }
-
-        .chibi-selector-item {
+        .chibi-card {
             background: #1A1A1A;
             border: 1px solid #222;
             border-radius: 16px;
             overflow: hidden;
             cursor: pointer;
-            transition: all 0.3s ease;
         }
 
-        .chibi-selector-item:active {
+        .chibi-card:active {
             transform: scale(0.98);
         }
 
-        .chibi-selector-item.selected {
+        .chibi-card.selected {
             border-color: var(--accent-color);
-            transform: scale(1.02);
-            box-shadow: 0 0 0 2px var(--accent-color);
         }
 
-        .chibi-selector-image {
+        .chibi-image-container {
+            position: relative;
             width: 100%;
             aspect-ratio: 1/1;
+            overflow: hidden;
+        }
+
+        .chibi-image {
+            width: 100%;
+            height: 100%;
             object-fit: cover;
         }
 
-        .chibi-selector-name {
+        .chibi-name {
             font-size: 13px;
+            font-weight: 600;
+            color: #FFFFFF;
             text-align: center;
             padding: 10px 6px;
-            color: white;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            font-weight: 500;
-        }
-
-        /* Выбранный чибик в центре */
-        .selected-chibi-view {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0.5);
-            opacity: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            z-index: 1001;
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            pointer-events: none;
-        }
-
-        .selected-chibi-view.active {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-            pointer-events: all;
-        }
-
-        .selected-chibi-image {
-            width: 200px;
-            height: 200px;
-            object-fit: contain;
-            border-radius: 20px;
-            border: 3px solid var(--accent-color);
-            background: #1A1A1A;
-            margin-bottom: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .selected-chibi-name {
-            font-size: 18px;
-            font-weight: 600;
-            color: #FFFFFF;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .price-input-container {
-            width: 200px;
-            animation: slideUp 0.4s ease 0.2s both;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .price-label {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.9);
-            margin-bottom: 10px;
-            text-align: center;
-        }
-
-        .price-input-wrapper {
-            display: flex;
-            align-items: center;
-            background: #1A1A1A;
-            border: 1px solid #333;
-            border-radius: 12px;
-            padding: 14px 16px;
-            transition: border-color 0.2s ease;
-        }
-
-        .price-input-wrapper:focus-within {
-            border-color: var(--accent-color);
-        }
-
-        .price-input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: white;
-            font-size: 18px;
-            outline: none;
-            font-family: inherit;
-            text-align: center;
-            font-weight: 500;
-        }
-
-        .price-currency {
-            color: var(--accent-color);
-            font-size: 16px;
-            font-weight: 600;
-            margin-left: 8px;
-        }
-
-        .sell-button {
-            background: var(--accent-color);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 16px;
-            font-size: 16px;
-            font-weight: 600;
-            width: 200px;
-            text-align: center;
-            cursor: pointer;
-            margin-top: 16px;
-            animation: slideUp 0.4s ease 0.3s both;
-            transition: opacity 0.2s ease;
-        }
-
-        .sell-button:active {
-            opacity: 0.8;
         }
 
         :root {
             --accent-color: #007AFF;
         }
-
-        @media (max-width: 375px) {
-            .header-row {
-                margin-top: 22px;
-                margin-bottom: 20px;
-            }
-            
-            .page-title {
-                font-size: 28px;
-            }
-            
-            .sticker-container {
-                width: 120px;
-                height: 120px;
-            }
-            
-            .empty-text {
-                font-size: 16px;
-            }
-            
-            .empty-description {
-                font-size: 14px;
-            }
-            
-            .shop-avatar {
-                width: 40px;
-                height: 40px;
-            }
-            
-            .shop-name {
-                font-size: 16px;
-            }
-            
-            .selected-chibi-image {
-                width: 160px;
-                height: 160px;
-            }
-        }
-
-        @media (max-width: 320px) {
-            .header-row {
-                margin-top: 20px;
-                margin-bottom: 18px;
-            }
-            
-            .page-title {
-                font-size: 24px;
-            }
-            
-            .sticker-container {
-                width: 100px;
-                height: 100px;
-            }
-            
-            .empty-text {
-                font-size: 15px;
-            }
-            
-            .empty-description {
-                font-size: 13px;
-            }
-            
-            .shop-items {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .selected-chibi-image {
-                width: 140px;
-                height: 140px;
-            }
-            
-            .price-input-container,
-            .sell-button {
-                width: 180px;
-            }
-        }
     </style>
 </head>
 <body>
-    <img src="https://i.ibb.co/SGSF7LC/image.png" alt="Рынок" class="header-image">
-    
-    <div class="main-content">
-        <div class="header-row">
-            <div class="page-title">Рынок</div>
-            <div class="add-button" onclick="openChibiSelector()">
-                <img src="https://img.icons8.com/?size=100&id=98945&format=png&color=FFFFFF" class="add-icon">
-            </div>
-        </div>
-        
-        <!-- Пустой экран -->
-        <div class="empty-container" id="emptyContainer">
-            <div class="sticker-container" id="martnthSticker"></div>
-            <div class="empty-text">Лавок пока нет</div>
-            <div class="empty-description">Нажми + чтобы создать свою лавку и начать торговать!</div>
+    <div class="header">
+        <div class="page-title">Рынок</div>
+        <div class="add-button" onclick="openModal()">
+            <img src="https://img.icons8.com/?size=100&id=354k6pS0PoMI&format=png&color=000000" class="add-icon">
         </div>
     </div>
+    
+    <div class="empty-container">
+        <div class="empty-text">Лотов пока нет</div>
+        <div class="empty-description">Но ничто не мешает тебе стать первым!</div>
+    </div>
 
-    <!-- Модалка выбора чибика -->
-    <div class="modal-overlay" id="chibiSelectorModal">
+    <!-- Модалка -->
+    <div class="modal-overlay" id="modal">
         <div class="modal-header">
             <div class="modal-title">Выбери чибика на продажу</div>
-            <div class="modal-close" onclick="closeChibiSelector()">Назад</div>
         </div>
-        <div class="chibi-selector-grid" id="chibiSelectorGrid">
-            <!-- Чибики будут загружены сюда -->
-        </div>
-        
-        <!-- Выбранный чибик в центре -->
-        <div class="selected-chibi-view" id="selectedChibiView">
-            <img src="" alt="" class="selected-chibi-image" id="selectedChibiImage">
-            <div class="selected-chibi-name" id="selectedChibiName"></div>
-            <div class="price-input-container">
-                <div class="price-label">Укажи цену в рублях</div>
-                <div class="price-input-wrapper">
-                    <input type="number" class="price-input" id="priceInput" placeholder="100" min="1" max="9999">
-                    <span class="price-currency">₽</span>
-                </div>
-            </div>
-            <button class="sell-button" onclick="sellChibi()">Выставить на продажу</button>
+        <div class="chibi-grid" id="chibiGrid">
+            <!-- Чибики будут здесь -->
         </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        let userData = {
-            common: { collected: [], all: [] },
-            secret: { collected: [], all: [] },
-            prize: { collected: [], all: [] }
-        };
-        let selectedChibi = null;
-        let currentUser = null;
         
-        function initTelegramApp() {
+        function init() {
             tg.ready();
             tg.expand();
             tg.setHeaderColor('#000000');
@@ -607,271 +199,68 @@
                 document.documentElement.style.setProperty('--accent-color', tg.themeParams.accent_text_color);
             }
             
-            tg.BackButton.onClick(closeChibiSelector);
-            
-            currentUser = tg.initDataUnsafe?.user || {
-                id: 1,
-                first_name: 'Игрок',
-                username: 'player'
-            };
-            
-            // Загружаем Lottie анимацию
-            loadMartnthAnimation();
-            
-            // Загружаем инвентарь пользователя (как в основном коде)
-            loadUserData();
+            tg.BackButton.onClick(closeModal);
         }
         
-        function loadMartnthAnimation() {
-            try {
-                lottie.loadAnimation({
-                    container: document.getElementById('martnthSticker'),
-                    renderer: 'svg',
-                    loop: true,
-                    autoplay: true,
-                    path: 'Animations/MartNth.json'
-                });
-            } catch (error) {
-                console.error('Ошибка загрузки анимации:', error);
-                document.getElementById('martnthSticker').innerHTML = 
-                    '<div style="color:rgba(255,255,255,0.3);font-size:14px;text-align:center;padding-top:40px;">MartNth</div>';
-            }
-        }
-        
-        async function loadUserData() {
-            try {
-                const user = currentUser;
-                
-                // Загружаем списки чибиков (как в основном коде)
-                await loadChibiLists();
-                
-                if (user) {
-                    await loadUserCollection(user.id);
-                }
-                
-            } catch (error) {
-                // Демо данные, если API недоступно
-                userData.common.all = ['Chibi 1', 'Chibi 2', 'Chibi 3', 'Chibi 4', 'Chibi 5', 'Chibi 6', 'Chibi 7', 'Chibi 8', 'Chibi 9', 'Chibi 10'];
-                userData.secret.all = ['Secret 1', 'Secret 2', 'Secret 3'];
-                userData.prize.all = ['Prize 1', 'Prize 2'];
-                userData.common.collected = userData.common.all.slice(0, 6);
-                userData.secret.collected = userData.secret.all.slice(0, 1);
-                userData.prize.collected = [];
-            }
-        }
-        
-        async function loadChibiLists() {
-            try {
-                userData.common.all = ['Chibi 1', 'Chibi 2', 'Chibi 3', 'Chibi 4', 'Chibi 5', 'Chibi 6', 'Chibi 7', 'Chibi 8', 'Chibi 9', 'Chibi 10'];
-                userData.secret.all = ['Secret 1', 'Secret 2', 'Secret 3'];
-                userData.prize.all = ['Prize 1', 'Prize 2'];
-            } catch (error) {}
-        }
-        
-        async function loadUserCollection(telegramId) {
-            try {
-                const response = await fetch('https://chibi-bot-3d4x.onrender.com/get_user_collection', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ telegram_id: telegramId })
-                });
-
-                if (response.ok) {
-                    const collection = await response.json();
-                    
-                    userData.common.collected = collection.common || [];
-                    userData.secret.collected = collection.secret || [];
-                    userData.prize.collected = collection.prize || [];
-                    
-                    if (collection.all_common) userData.common.all = collection.all_common;
-                    if (collection.all_secret) userData.secret.all = collection.all_secret;
-                    if (collection.all_prize) userData.prize.all = collection.all_prize;
-                }
-            } catch (error) {
-                userData.common.collected = userData.common.all.slice(0, 6);
-                userData.secret.collected = userData.secret.all.slice(0, 1);
-                userData.prize.collected = [];
-            }
-        }
-        
-        function openChibiSelector() {
+        function openModal() {
             tg.HapticFeedback.impactOccurred('light');
+            document.getElementById('modal').classList.add('active');
+            tg.BackButton.show();
             
-            document.getElementById('chibiSelectorModal').classList.add('active');
-            document.getElementById('selectedChibiView').classList.remove('active');
-            document.getElementById('chibiSelectorGrid').classList.remove('blurred');
+            // Демо данные чибиков
+            const demoChibis = [
+                { id: 1, name: "Chibi 1", image: "https://raw.githubusercontent.com/therootishere00-ux/Chibi-bot/main/chibis/common/Chibi_1.png" },
+                { id: 2, name: "Chibi 2", image: "https://raw.githubusercontent.com/therootishere00-ux/Chibi-bot/main/chibis/common/Chibi_2.png" },
+                { id: 3, name: "Chibi 3", image: "https://raw.githubusercontent.com/therootishere00-ux/Chibi-bot/main/chibis/common/Chibi_3.png" },
+                { id: 4, name: "Chibi 4", image: "https://raw.githubusercontent.com/therootishere00-ux/Chibi-bot/main/chibis/common/Chibi_4.png" },
+                { id: 5, name: "Chibi 5", image: "https://raw.githubusercontent.com/therootishere00-ux/Chibi-bot/main/chibis/common/Chibi_5.png" },
+                { id: 6, name: "Chibi 6", image: "https://raw.githubusercontent.com/therootishere00-ux/Chibi-bot/main/chibis/common/Chibi_6.png" },
+            ];
             
-            // Собираем все чибики пользователя
-            const allChibis = [];
-            
-            // Обычные чибики
-            userData.common.collected.forEach(name => {
-                allChibis.push({
-                    name: name,
-                    type: 'common',
-                    image: `https://raw.githubusercontent.com/therootishere00-ux/Chibi-bot/main/chibis/common/${name.replace(/ /g, '_')}.png`
-                });
-            });
-            
-            // Секретные чибики
-            userData.secret.collected.forEach(name => {
-                allChibis.push({
-                    name: name,
-                    type: 'secret',
-                    image: `https://raw.githubusercontent.com/therootishere00-ux/Chibi-bot/main/chibis/secret/${name.replace(/ /g, '_')}.png`
-                });
-            });
-            
-            // Призовые чибики
-            userData.prize.collected.forEach(name => {
-                allChibis.push({
-                    name: name,
-                    type: 'prize',
-                    image: `https://raw.githubusercontent.com/therootishere00-ux/Chibi-bot/main/chibis/prize/${name.replace(/ /g, '_')}.png`
-                });
-            });
-            
-            // Рендерим сетку
-            const grid = document.getElementById('chibiSelectorGrid');
+            renderChibis(demoChibis);
+        }
+        
+        function closeModal() {
+            tg.HapticFeedback.impactOccurred('light');
+            document.getElementById('modal').classList.remove('active');
+            tg.BackButton.hide();
+        }
+        
+        function renderChibis(chibis) {
+            const grid = document.getElementById('chibiGrid');
             grid.innerHTML = '';
             
-            if (allChibis.length === 0) {
-                grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,255,255,0.5);">У тебя пока нет чибиков</div>';
-                return;
-            }
-            
-            allChibis.forEach((chibi, index) => {
-                const item = document.createElement('div');
-                item.className = 'chibi-selector-item';
-                item.dataset.index = index;
-                
-                item.innerHTML = `
-                    <img src="${chibi.image}" alt="${chibi.name}" class="chibi-selector-image">
-                    <div class="chibi-selector-name">${chibi.name}</div>
+            chibis.forEach(chibi => {
+                const card = document.createElement('div');
+                card.className = 'chibi-card';
+                card.innerHTML = `
+                    <div class="chibi-image-container">
+                        <img src="${chibi.image}" alt="${chibi.name}" class="chibi-image">
+                    </div>
+                    <div class="chibi-name">${chibi.name}</div>
                 `;
                 
-                item.onclick = () => selectChibi(chibi);
-                grid.appendChild(item);
+                card.onclick = () => selectChibi(chibi);
+                grid.appendChild(card);
             });
-            
-            tg.BackButton.show();
         }
         
         function selectChibi(chibi) {
             tg.HapticFeedback.impactOccurred('light');
             
-            selectedChibi = chibi;
-            
             // Снимаем выделение со всех
-            document.querySelectorAll('.chibi-selector-item').forEach(item => {
-                item.classList.remove('selected');
+            document.querySelectorAll('.chibi-card').forEach(card => {
+                card.classList.remove('selected');
             });
             
             // Выделяем выбранный
-            const selectedItem = document.querySelector(`[data-index="${chibi.index}"]`);
-            if (selectedItem) {
-                selectedItem.classList.add('selected');
-            }
+            event.currentTarget.classList.add('selected');
             
-            // Показываем чибика в центре
-            const selectedView = document.getElementById('selectedChibiView');
-            selectedView.classList.remove('active');
-            
-            setTimeout(() => {
-                document.getElementById('selectedChibiImage').src = chibi.image;
-                document.getElementById('selectedChibiName').textContent = chibi.name;
-                document.getElementById('priceInput').value = '';
-                
-                // Размываем сетку
-                document.getElementById('chibiSelectorGrid').classList.add('blurred');
-                
-                // Показываем выбранного чибика
-                setTimeout(() => {
-                    selectedView.classList.add('active');
-                }, 100);
-            }, 50);
+            // Здесь будет логика выбора чибика для продажи
+            console.log('Выбран чибик:', chibi.name);
         }
         
-        function closeChibiSelector() {
-            tg.HapticFeedback.impactOccurred('light');
-            
-            document.getElementById('chibiSelectorModal').classList.remove('active');
-            document.getElementById('selectedChibiView').classList.remove('active');
-            selectedChibi = null;
-            
-            tg.BackButton.hide();
-        }
-        
-        function sellChibi() {
-            const priceInput = document.getElementById('priceInput');
-            const price = parseInt(priceInput.value);
-            
-            if (!price || price < 1) {
-                tg.HapticFeedback.notificationOccurred('error');
-                tg.showAlert('Введите корректную цену (от 1 рубля)');
-                return;
-            }
-            
-            if (price > 9999) {
-                tg.HapticFeedback.notificationOccurred('error');
-                tg.showAlert('Максимальная цена - 9999 рублей');
-                return;
-            }
-            
-            if (!selectedChibi) {
-                tg.HapticFeedback.notificationOccurred('error');
-                tg.showAlert('Выберите чибика для продажи');
-                return;
-            }
-            
-            tg.HapticFeedback.impactOccurred('medium');
-            
-            // Здесь будет логика выставления на продажу
-            console.log('Выставление на продажу:', {
-                chibi: selectedChibi.name,
-                type: selectedChibi.type,
-                price: price,
-                seller: currentUser.username || currentUser.first_name
-            });
-            
-            // Создаем лавку если ее нет
-            createShopAndAddItem(selectedChibi, price);
-            
-            // Закрываем модалку
-            closeChibiSelector();
-            
-            tg.showAlert(`Чибик "${selectedChibi.name}" выставлен на продажу за ${price} рублей!`);
-        }
-        
-        function createShopAndAddItem(chibi, price) {
-            // Создаем лавку если ее нет
-            const shopName = `Лавка ${currentUser.first_name || 'Игрока'}`;
-            
-            // Прячем пустой экран
-            document.getElementById('emptyContainer').style.display = 'none';
-            
-            // Создаем карточку лавки (в реальном приложении будет через API)
-            // Здесь просто демонстрируем создание
-            tg.showAlert(`Лавка "${shopName}" создана!\nЧибик "${chibi.name}" добавлен за ${price} рублей.`);
-        }
-        
-        // Закрытие по клику на задний фон
-        document.getElementById('chibiSelectorModal').addEventListener('click', function(e) {
-            if (e.target === this && document.getElementById('selectedChibiView').classList.contains('active')) {
-                // Если чибик выбран, возвращаем к выбору
-                document.getElementById('selectedChibiView').classList.remove('active');
-                document.getElementById('chibiSelectorGrid').classList.remove('blurred');
-                selectedChibi = null;
-                
-                document.querySelectorAll('.chibi-selector-item').forEach(item => {
-                    item.classList.remove('selected');
-                });
-            }
-        });
-        
-        document.addEventListener('DOMContentLoaded', initTelegramApp);
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
