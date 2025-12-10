@@ -113,12 +113,72 @@
             height: 150px;
         }
 
+        .title-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
         .title {
             font-size: 24px;
             font-weight: 700;
             color: #FFFFFF;
-            margin-bottom: 20px;
-            text-align: center;
+        }
+
+        .user-rank-badge {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0.65;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .user-rank-badge:active {
+            opacity: 1;
+            transform: scale(0.95);
+        }
+
+        .rank-tooltip {
+            position: absolute;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1A1A1A;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #FFFFFF;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            transition: opacity 0.2s ease;
+            border: 1px solid #222;
+        }
+
+        .rank-tooltip.show {
+            opacity: 1;
+        }
+
+        .rank-tooltip::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 6px solid #1A1A1A;
         }
 
         .divider {
@@ -190,71 +250,51 @@
         .rating-list {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
             max-width: 500px;
             margin: 0 auto;
         }
 
         .rating-card {
-            background: #1A1A1A;
+            background: rgba(26, 26, 26, 0.9);
             border-radius: 27px;
             border: 1px solid #222;
-            padding: 14px;
+            padding: 18px;
             display: flex;
             align-items: center;
-            transition: background-color 0.15s ease;
+            transition: all 0.15s ease;
             position: relative;
             cursor: pointer;
+            backdrop-filter: blur(10px);
         }
 
         .rating-card:active {
-            background: #222;
+            background: rgba(34, 34, 34, 0.9);
+            transform: scale(0.98);
         }
 
         .position {
-            font-size: 16px;
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.7);
-            width: 30px;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent-color, #007AFF);
+            width: 40px;
             text-align: center;
             flex-shrink: 0;
-        }
-
-        .user-avatar-small {
-            width: 44px;
-            height: 44px;
-            border-radius: 16px;
-            margin-right: 12px;
-            flex-shrink: 0;
-            overflow: hidden;
-            position: relative;
-            background: var(--accent-color, #007AFF);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 20px;
-            color: #fff;
-            font-family: Arial, sans-serif;
-        }
-
-        .user-avatar-small img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+            text-shadow: 0 0 10px rgba(var(--accent-rgb, 0, 122, 255), 0.3);
         }
 
         .user-info {
             flex: 1;
             text-align: left;
             min-width: 0;
+            margin-left: 16px;
         }
 
         .username {
-            font-size: 16px;
-            font-weight: 500;
+            font-size: 17px;
+            font-weight: 600;
             color: #FFFFFF;
-            margin-bottom: 2px;
+            margin-bottom: 4px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -262,20 +302,24 @@
 
         .user-id {
             font-size: 14px;
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(255, 255, 255, 0.6);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
         .score {
-            font-size: 16px;
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.9);
+            font-size: 18px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.95);
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
             flex-shrink: 0;
+            padding-left: 16px;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            min-width: 90px;
+            text-align: right;
         }
 
         .loading {
@@ -342,14 +386,38 @@
             100% { transform: rotate(360deg); }
         }
 
+        .top-three .position {
+            font-size: 22px;
+            text-shadow: 0 0 15px rgba(var(--accent-rgb, 0, 122, 255), 0.5);
+        }
+
+        .top-three .username {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .top-three .score {
+            font-size: 20px;
+        }
+
         @media (max-width: 375px) {
             .rating-card {
                 border-radius: 24px;
+                padding: 16px;
             }
             
-            .user-avatar-small {
-                border-radius: 14px;
+            .position {
                 font-size: 18px;
+                width: 35px;
+            }
+            
+            .username {
+                font-size: 16px;
+            }
+            
+            .score {
+                font-size: 16px;
+                min-width: 80px;
             }
             
             .user-avatar-container {
@@ -368,16 +436,30 @@
             .selector-container {
                 gap: 30px;
             }
+            
+            .title {
+                font-size: 22px;
+            }
         }
 
         @media (max-width: 320px) {
             .rating-card {
                 border-radius: 21px;
+                padding: 14px;
             }
             
-            .user-avatar-small {
-                border-radius: 12px;
+            .position {
                 font-size: 16px;
+                width: 30px;
+            }
+            
+            .username {
+                font-size: 15px;
+            }
+            
+            .score {
+                font-size: 15px;
+                min-width: 70px;
             }
             
             .user-avatar-container {
@@ -395,6 +477,10 @@
             
             .selector-container {
                 gap: 20px;
+            }
+            
+            .title {
+                font-size: 20px;
             }
         }
     </style>
@@ -417,7 +503,12 @@
                 <div class="sticker-wrapper" id="stickerContainer"></div>
             </div>
             
-            <div class="title">Рейтинг игроков</div>
+            <div class="title-container">
+                <div class="title">Рейтинг игроков</div>
+                <div class="user-rank-badge" id="userRankBadge">#...</div>
+            </div>
+            
+            <div class="rank-tooltip" id="rankTooltip">Ты на 0 месте в общем рейтинге</div>
             
             <div class="divider"></div>
             
@@ -452,6 +543,8 @@
         let currentRatingType = 'coins';
         let coinsData = [];
         let chibisData = [];
+        let currentUserRank = 0;
+        let rankTooltipVisible = false;
         
         const EXCLUDED_USERS = ['ya_admin7', 'tmkazavr'];
 
@@ -461,8 +554,12 @@
             tg.setHeaderColor('#000000');
             tg.setBackgroundColor('#000000');
             
-            if (tg.themeParams.accent_text_color) {
-                document.documentElement.style.setProperty('--accent-color', tg.themeParams.accent_text_color);
+            const accentColor = tg.themeParams.accent_text_color || '#007AFF';
+            document.documentElement.style.setProperty('--accent-color', accentColor);
+            
+            const rgb = hexToRgb(accentColor);
+            if (rgb) {
+                document.documentElement.style.setProperty('--accent-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
             }
             
             tg.BackButton.onClick(goBack);
@@ -470,16 +567,32 @@
             document.addEventListener('click', function(e) {
                 const tooltip = document.getElementById('eventTooltip');
                 const avatarContainer = document.getElementById('userAvatarContainer');
+                const rankTooltip = document.getElementById('rankTooltip');
+                const rankBadge = document.getElementById('userRankBadge');
                 
                 if (!avatarContainer.contains(e.target) && !tooltip.contains(e.target) && tooltipVisible) {
                     hideEventTooltip();
+                }
+                
+                if (!rankBadge.contains(e.target) && !rankTooltip.contains(e.target) && rankTooltipVisible) {
+                    hideRankTooltip();
                 }
             });
             
             setupUserAvatar();
             loadStickers();
             setupSelector();
+            setupRankBadge();
             loadAllRatingData();
+        }
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
         }
 
         function setupUserAvatar() {
@@ -492,8 +605,7 @@
                 if (user.photo_url) {
                     avatarElement.innerHTML = `<img src="${user.photo_url}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">`;
                 } else {
-                    const initial = getFirstValidChar(user.username || user.first_name || 'U');
-                    avatarElement.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:#fff;border-radius:12px;background:var(--accent-color, #007AFF);font-family:Arial, sans-serif;">${initial}</div>`;
+                    avatarElement.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:#fff;border-radius:12px;background:var(--accent-color, #007AFF);">U</div>`;
                 }
                 
                 const username = user.username || '';
@@ -518,7 +630,7 @@
                     toggleEventTooltip();
                 });
             } else {
-                avatarElement.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:#fff;border-radius:12px;background:var(--accent-color, #007AFF);font-family:Arial, sans-serif;">U</div>`;
+                avatarElement.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:#fff;border-radius:12px;background:var(--accent-color, #007AFF);">U</div>`;
                 currentUserGif = 'https://stickers.fullyst.com/0f72a8b7-c353-5e21-9e25-cbaa1f8b8a68/full/AgAD4SIAAm86EEk.webp';
                 gifElement.src = currentUserGif;
                 
@@ -534,28 +646,35 @@
             }
         }
 
-        function getFirstValidChar(str) {
-            if (!str || str.trim() === '') return 'Н';
+        function setupRankBadge() {
+            const rankBadge = document.getElementById('userRankBadge');
+            const rankTooltip = document.getElementById('rankTooltip');
             
-            const cleanStr = str.trim();
-            const firstChar = cleanStr[0];
+            rankBadge.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleRankTooltip();
+            });
+        }
+
+        function toggleRankTooltip() {
+            const rankTooltip = document.getElementById('rankTooltip');
             
-            const validCharsRegex = /[a-zA-Zа-яА-ЯёЁ0-9]/;
-            const emojiRegex = /[\uD800-\uDBFF][\uDC00-\uDFFF]|[\u2600-\u27BF]|[\uD83C][\uDF00-\uDFFF]|[\uD83D][\uDC00-\uDE4F]/;
-            
-            if (emojiRegex.test(firstChar) || firstChar === '@') {
-                if (cleanStr.length > 1) {
-                    for (let i = 1; i < cleanStr.length; i++) {
-                        const char = cleanStr[i];
-                        if (char !== '@' && char !== ' ') {
-                            return char.toUpperCase();
-                        }
-                    }
-                }
-                return 'Н';
+            if (rankTooltipVisible) {
+                hideRankTooltip();
+            } else {
+                rankTooltip.classList.add('show');
+                rankTooltipVisible = true;
+                
+                setTimeout(() => {
+                    hideRankTooltip();
+                }, 3000);
             }
-            
-            return firstChar.toUpperCase();
+        }
+
+        function hideRankTooltip() {
+            const rankTooltip = document.getElementById('rankTooltip');
+            rankTooltip.classList.remove('show');
+            rankTooltipVisible = false;
         }
 
         function toggleEventTooltip() {
@@ -669,6 +788,7 @@
                     loadChibisRating()
                 ]);
                 
+                calculateUserRank();
                 renderCurrentRating();
             } catch (error) {
                 document.getElementById('ratingList').innerHTML = 
@@ -706,11 +826,54 @@
             }
         }
 
+        function calculateUserRank() {
+            const currentUser = tg.initDataUnsafe?.user;
+            if (!currentUser) return;
+            
+            const currentUsername = currentUser.username ? currentUser.username.toLowerCase() : '';
+            
+            let coinsRank = 0;
+            let chibisRank = 0;
+            
+            coinsData.forEach((user, index) => {
+                if (user.username && user.username.toLowerCase() === currentUsername) {
+                    coinsRank = index + 1;
+                }
+            });
+            
+            chibisData.forEach((user, index) => {
+                if (user.username && user.username.toLowerCase() === currentUsername) {
+                    chibisRank = index + 1;
+                }
+            });
+            
+            if (coinsRank > 0 && chibisRank > 0) {
+                currentUserRank = Math.round((coinsRank + chibisRank) / 2);
+            } else if (coinsRank > 0) {
+                currentUserRank = coinsRank;
+            } else if (chibisRank > 0) {
+                currentUserRank = chibisRank;
+            } else {
+                currentUserRank = 0;
+            }
+            
+            const rankBadge = document.getElementById('userRankBadge');
+            const rankTooltip = document.getElementById('rankTooltip');
+            
+            if (currentUserRank > 0) {
+                rankBadge.textContent = `#${currentUserRank}`;
+                rankTooltip.textContent = `Ты на ${currentUserRank} месте в общем рейтинге`;
+            } else {
+                rankBadge.textContent = '#?';
+                rankTooltip.textContent = 'Ты пока не в рейтинге';
+            }
+        }
+
         function renderCurrentRating() {
             if (currentRatingType === 'coins') {
-                renderRating(coinsData, currentRatingType);
+                renderRating(coinsData.slice(0, 10), currentRatingType);
             } else {
-                renderRating(chibisData, currentRatingType);
+                renderRating(chibisData.slice(0, 10), currentRatingType);
             }
         }
 
@@ -738,24 +901,17 @@
                 const card = document.createElement('div');
                 card.className = 'rating-card';
                 
+                if (index < 3) {
+                    card.classList.add('top-three');
+                }
+                
                 const username = player.username ? `@${player.username.trim()}` : 'Без юза';
                 const score = type === 'coins' ? player.coins || 0 : player.chibis_count || 0;
                 const scoreIcon = type === 'coins' ? '💰' : '⚡️';
                 const displayName = getDisplayName(player);
-                const avatarInitial = getFirstValidChar(displayName);
-                
-                let avatarContent = '';
-                if (player.photo_url) {
-                    avatarContent = `<img src="${player.photo_url}" alt="${displayName}" onerror="this.parentElement.innerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:Arial, sans-serif;font-weight:bold;font-size:20px;color:#fff;background:var(--accent-color, #007AFF);\\'>${avatarInitial}</div>'">`;
-                } else {
-                    avatarContent = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:Arial, sans-serif;font-weight:bold;font-size:20px;color:#fff;background:var(--accent-color, #007AFF);">${avatarInitial}</div>`;
-                }
                 
                 card.innerHTML = `
-                    <div class="position">${index + 1}.</div>
-                    <div class="user-avatar-small">
-                        ${avatarContent}
-                    </div>
+                    <div class="position">${index + 1}</div>
                     <div class="user-info">
                         <div class="username">${displayName}</div>
                         <div class="user-id">${username}</div>
