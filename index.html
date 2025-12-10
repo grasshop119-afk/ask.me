@@ -6,6 +6,8 @@
     <title>Рейтинг — Чибики</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
     <style>
         * {
             -webkit-touch-callout: none;
@@ -227,7 +229,7 @@
             flex-shrink: 0;
             overflow: hidden;
             position: relative;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--accent-color, #007AFF);
         }
 
         .user-avatar-small img {
@@ -455,9 +457,21 @@
         let currentRatingType = 'coins';
         let coinsData = [];
         let chibisData = [];
+        let userDataMap = new Map(); // Для хранения данных пользователей из Firebase
+        let firestoreInitialized = false;
         
         // Список исключенных пользователей (в нижнем регистре)
         const EXCLUDED_USERS = ['ya_admin7', 'tmkazavr'];
+        
+        // Конфигурация Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDrvqEb5GMrWaCLSd3aHEdOQIDA321v_BA",
+            authDomain: "chibeki-ideas.firebaseapp.com",
+            projectId: "chibeki-ideas",
+            storageBucket: "chibeki-ideas.firebasestorage.app",
+            messagingSenderId: "31211023786",
+            appId: "1:31211023786:web:35343c74dbf73a50f6cfd3"
+        };
 
         function initTelegramApp() {
             tg.ready();
@@ -480,10 +494,66 @@
                 }
             });
             
+            initializeFirebase();
             setupUserAvatar();
             loadStickers();
             setupSelector();
-            loadAllRatingData();
+        }
+
+        function initializeFirebase() {
+            try {
+                firebase.initializeApp(firebaseConfig);
+                firestoreInitialized = true;
+                console.log('Firebase инициализирован');
+                loadAllRatingData();
+            } catch (error) {
+                console.error('Ошибка инициализации Firebase:', error);
+                // Если Firebase не инициализирован, все равно загружаем рейтинг
+                loadAllRatingData();
+            }
+        }
+
+        async function loadUserDataFromFirestore(userId) {
+            if (!firestoreInitialized) return null;
+            
+            try {
+                const db = firebase.firestore();
+                const userDoc = await db.collection('users').doc(userId.toString()).get();
+                
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    userDataMap.set(userId, userData);
+                    return userData;
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки данных пользователя из Firestore:', error);
+            }
+            return null;
+        }
+
+        async function loadAllUserDataFromFirestore(userIds) {
+            if (!firestoreInitialized) return;
+            
+            try {
+                const db = firebase.firestore();
+                // Загружаем данные для всех пользователей сразу
+                const usersRef = db.collection('users');
+                
+                // Получаем данные для всех userIds
+                const promises = userIds.map(userId => 
+                    usersRef.doc(userId.toString()).get()
+                );
+                
+                const snapshots = await Promise.all(promises);
+                
+                snapshots.forEach((snapshot, index) => {
+                    if (snapshot.exists) {
+                        userDataMap.set(userIds[index], snapshot.data());
+                    }
+                });
+            } catch (error) {
+                console.error('Ошибка загрузки данных пользователей из Firestore:', error);
+            }
         }
 
         function setupUserAvatar() {
@@ -493,6 +563,7 @@
             const avatarContainer = document.getElementById('userAvatarContainer');
             
             if (user) {
+                // Сначала устанавливаем аватар из Telegram
                 if (user.photo_url) {
                     avatarElement.innerHTML = `<img src="${user.photo_url}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">`;
                 } else {
@@ -502,15 +573,26 @@
                 
                 const username = user.username || '';
                 
-                if (username.toLowerCase() === 'temkazavr') {
-                    currentUserGif = 'https://stickers.fullyst.com/e7e72911-670d-5946-93e4-3a32dfc3bdbd/full/AgADpWUAAhchkEo.webp';
-                } else if (username.toLowerCase() === 'ribapibaa') {
-                    currentUserGif = 'https://telepot.ru/images/stickers_img/652a5ce136.gif';
-                } else {
-                    currentUserGif = 'https://stickers.fullyst.com/0f72a8b7-c353-5e21-9e25-cbaa1f8b8a68/full/AgAD4SIAAm86EEk.webp';
+                // Загружаем данные пользователя из Firestore
+                if (firestoreInitialized && user.id) {
+                    loadUserDataFromFirestore(user.id).then(userData => {
+                        if (userData) {
+                            // Обновляем аватар из Firestore, если есть
+                            if (userData.photo_url) {
+                                avatarElement.innerHTML = `<img src="${userData.photo_url}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">`;
+                            }
+                            
+                            // Обновляем гифку из Firestore, если есть
+                            if (userData.reward_gif) {
+                                currentUserGif = userData.reward_gif;
+                                gifElement.src = currentUserGif;
+                            }
+                        }
+                    });
                 }
                 
-                gifElement.src = currentUserGif;
+                // Устанавливаем дефолтную гифку
+                gifElement.src = currentUserGif || 'https://stickers.fullyst.com/0f72a8b7-c353-5e21-9e25-cbaa1f8b8a68/full/AgAD4SIAAm86EEk.webp';
                 
                 avatarContainer.addEventListener('click', function(e) {
                     e.stopPropagation();
@@ -650,6 +732,17 @@
                     loadChibisRating()
                 ]);
                 
+                // Собираем все userIds из обоих рейтингов
+                const allUserIds = new Set();
+                [...coinsData, ...chibisData].forEach(user => {
+                    if (user.id) allUserIds.add(user.id);
+                });
+                
+                // Загружаем данные всех пользователей из Firestore
+                if (firestoreInitialized && allUserIds.size > 0) {
+                    await loadAllUserDataFromFirestore(Array.from(allUserIds));
+                }
+                
                 renderCurrentRating();
             } catch (error) {
                 document.getElementById('ratingList').innerHTML = 
@@ -715,12 +808,27 @@
                 
                 const username = player.username ? `@${player.username}` : 'без юзернейма';
                 const score = type === 'coins' ? player.coins || 0 : player.chibis_count || 0;
-                const scoreIcon = type === 'coins' ? '💰' : '⚡️'; // Изменено с 👤 на ⚡️
+                const scoreIcon = type === 'coins' ? '💰' : '⚡️';
+                
+                // Получаем данные пользователя из Firestore
+                const userFirestoreData = player.id ? userDataMap.get(player.id) : null;
                 
                 // Определяем, что показывать в аватаре
                 let avatarContent = '';
-                if (player.photo_url) {
-                    avatarContent = `<img src="${player.photo_url}" alt="${player.name}">`;
+                let avatarUrl = null;
+                
+                // Проверяем приоритеты для аватара:
+                // 1. Аватар из Firestore
+                // 2. Аватар из данных рейтинга
+                // 3. Инициалы
+                if (userFirestoreData && userFirestoreData.photo_url) {
+                    avatarUrl = userFirestoreData.photo_url;
+                } else if (player.photo_url) {
+                    avatarUrl = player.photo_url;
+                }
+                
+                if (avatarUrl) {
+                    avatarContent = `<img src="${avatarUrl}" alt="${player.name}" onerror="this.parentElement.innerHTML='<div class=\\'avatar-initial\\'>${player.name ? player.name[0].toUpperCase() : '?'}</div>'">`;
                 } else {
                     const initial = player.name ? player.name[0].toUpperCase() : 
                                    player.username ? player.username[0].toUpperCase() : '?';
