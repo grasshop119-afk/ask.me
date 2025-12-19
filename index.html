@@ -110,7 +110,7 @@
             overflow-y: auto;
             -ms-overflow-style: none;
             scrollbar-width: none;
-            overscroll-behavior: contain;
+            overscroll-behavior: none;
         }
 
         .main-content::-webkit-scrollbar {
@@ -224,34 +224,160 @@
             height: 100vh;
             background: #000;
             position: relative;
+            overflow-y: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
             overscroll-behavior: contain;
         }
 
-        .refresh-indicator {
+        .collection-screen::-webkit-scrollbar {
+            display: none;
+        }
+
+        .pull-to-refresh-container {
             position: absolute;
-            top: -50px;
+            top: 0;
             left: 0;
             right: 0;
-            height: 50px;
+            height: 120px;
+            pointer-events: none;
             display: flex;
             align-items: center;
             justify-content: center;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            overflow: hidden;
+            z-index: 1;
         }
 
-        .refresh-indicator.active {
+        .pull-to-refresh-spinner {
+            width: 48px;
+            height: 48px;
+            position: relative;
+            opacity: 0;
+            transform: translateY(-100%);
+            transition: opacity 0.2s ease, transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .pull-to-refresh-spinner.active {
             opacity: 1;
         }
 
-        .refresh-spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top-color: var(--accent-color, #007AFF);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+        .spinner {
+            font-size: 48px;
+            position: relative;
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+        }
+
+        .spinner-blade {
+            position: absolute;
+            left: 0.4629em;
+            bottom: 0;
+            width: 0.074em;
+            height: 0.2777em;
+            border-radius: 0.0555em;
+            background-color: transparent;
+            transform-origin: center -0.2222em;
+            animation: spinner-fade 1s infinite linear;
+        }
+
+        @keyframes spinner-fade {
+            0% {
+                background-color: #8E8E93;
+            }
+            100% {
+                background-color: transparent;
+            }
+        }
+
+        .spinner-blade:nth-child(1) {
+            animation-delay: 0s;
+            transform: rotate(0deg);
+        }
+
+        .spinner-blade:nth-child(2) {
+            animation-delay: 0.083s;
+            transform: rotate(30deg);
+        }
+
+        .spinner-blade:nth-child(3) {
+            animation-delay: 0.166s;
+            transform: rotate(60deg);
+        }
+
+        .spinner-blade:nth-child(4) {
+            animation-delay: 0.249s;
+            transform: rotate(90deg);
+        }
+
+        .spinner-blade:nth-child(5) {
+            animation-delay: 0.332s;
+            transform: rotate(120deg);
+        }
+
+        .spinner-blade:nth-child(6) {
+            animation-delay: 0.415s;
+            transform: rotate(150deg);
+        }
+
+        .spinner-blade:nth-child(7) {
+            animation-delay: 0.498s;
+            transform: rotate(180deg);
+        }
+
+        .spinner-blade:nth-child(8) {
+            animation-delay: 0.581s;
+            transform: rotate(210deg);
+        }
+
+        .spinner-blade:nth-child(9) {
+            animation-delay: 0.664s;
+            transform: rotate(240deg);
+        }
+
+        .spinner-blade:nth-child(10) {
+            animation-delay: 0.747s;
+            transform: rotate(270deg);
+        }
+
+        .spinner-blade:nth-child(11) {
+            animation-delay: 0.83s;
+            transform: rotate(300deg);
+        }
+
+        .spinner-blade:nth-child(12) {
+            animation-delay: 0.913s;
+            transform: rotate(330deg);
+        }
+
+        .refresh-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .refresh-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .refresh-overlay .spinner {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            margin: auto;
         }
 
         .articles-container {
@@ -264,6 +390,8 @@
             display: grid;
             gap: 12px;
             transition: all 0.3s ease;
+            position: relative;
+            z-index: 0;
         }
 
         .grid-3 {
@@ -569,24 +697,86 @@
         </div>
 
         <div class="screen collection-screen" id="commonCollectionScreen">
-            <div class="refresh-indicator" id="commonRefreshIndicator">
-                <div class="refresh-spinner"></div>
+            <div class="pull-to-refresh-container" id="commonPullToRefresh">
+                <div class="pull-to-refresh-spinner" id="commonSpinner">
+                    <div class="spinner">
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                    </div>
+                </div>
             </div>
             <div class="chibi-grid grid-3" id="commonGrid"></div>
         </div>
 
         <div class="screen collection-screen" id="secretCollectionScreen">
-            <div class="refresh-indicator" id="secretRefreshIndicator">
-                <div class="refresh-spinner"></div>
+            <div class="pull-to-refresh-container" id="secretPullToRefresh">
+                <div class="pull-to-refresh-spinner" id="secretSpinner">
+                    <div class="spinner">
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                    </div>
+                </div>
             </div>
             <div class="chibi-grid grid-3" id="secretGrid"></div>
         </div>
 
         <div class="screen collection-screen" id="prizeCollectionScreen">
-            <div class="refresh-indicator" id="prizeRefreshIndicator">
-                <div class="refresh-spinner"></div>
+            <div class="pull-to-refresh-container" id="prizePullToRefresh">
+                <div class="pull-to-refresh-spinner" id="prizeSpinner">
+                    <div class="spinner">
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                        <div class="spinner-blade"></div>
+                    </div>
+                </div>
             </div>
             <div class="chibi-grid grid-3" id="prizeGrid"></div>
+        </div>
+    </div>
+
+    <div class="refresh-overlay" id="refreshOverlay">
+        <div class="spinner">
+            <div class="spinner-blade"></div>
+            <div class="spinner-blade"></div>
+            <div class="spinner-blade"></div>
+            <div class="spinner-blade"></div>
+            <div class="spinner-blade"></div>
+            <div class="spinner-blade"></div>
+            <div class="spinner-blade"></div>
+            <div class="spinner-blade"></div>
+            <div class="spinner-blade"></div>
+            <div class="spinner-blade"></div>
+            <div class="spinner-blade"></div>
+            <div class="spinner-blade"></div>
         </div>
     </div>
 
@@ -611,9 +801,11 @@
         // Переменные для pull-to-refresh
         let touchStartY = 0;
         let touchCurrentY = 0;
+        let isDragging = false;
         let isRefreshing = false;
-        let refreshThreshold = 80;
         let currentCollectionScreen = null;
+        let refreshThreshold = 80;
+        let maxPullDistance = 120;
 
         function initTelegramApp() {
             tg.ready();
@@ -656,15 +848,14 @@
             screens.forEach(screenId => {
                 const screen = document.getElementById(screenId);
                 
-                screen.addEventListener('touchstart', handleTouchStart, { passive: true });
-                screen.addEventListener('touchmove', handleTouchMove, { passive: true });
+                screen.addEventListener('touchstart', handleTouchStart, { passive: false });
+                screen.addEventListener('touchmove', handleTouchMove, { passive: false });
                 screen.addEventListener('touchend', handleTouchEnd, { passive: true });
                 
                 // Для мыши (десктоп)
-                screen.addEventListener('mousedown', handleMouseStart, { passive: true });
-                screen.addEventListener('mousemove', handleMouseMove, { passive: true });
-                screen.addEventListener('mouseup', handleMouseEnd, { passive: true });
-                screen.addEventListener('mouseleave', handleMouseEnd, { passive: true });
+                screen.addEventListener('mousedown', handleMouseStart);
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseEnd);
             });
         }
 
@@ -675,45 +866,47 @@
             const scrollTop = screen.scrollTop;
             
             // Если мы в самом верху экрана, начинаем отслеживать
-            if (scrollTop === 0) {
+            if (scrollTop <= 0) {
                 touchStartY = e.touches[0].clientY;
                 currentCollectionScreen = screen.id.replace('CollectionScreen', '');
+                isDragging = true;
             }
         }
 
         function handleTouchMove(e) {
-            if (isRefreshing || !touchStartY) return;
+            if (!isDragging || isRefreshing) return;
             
             const screen = e.currentTarget;
             const scrollTop = screen.scrollTop;
             
+            // Если скроллили вниз, прекращаем drag
             if (scrollTop > 0) {
-                touchStartY = 0;
+                resetPullState();
                 return;
             }
             
+            e.preventDefault();
+            
             touchCurrentY = e.touches[0].clientY;
-            const pullDistance = touchCurrentY - touchStartY;
+            const pullDistance = Math.max(0, touchCurrentY - touchStartY);
             
             if (pullDistance > 0) {
-                e.preventDefault();
-                updateRefreshIndicator(pullDistance);
+                updatePullIndicator(pullDistance);
             }
         }
 
-        function handleTouchEnd(e) {
-            if (isRefreshing || !touchStartY) return;
+        function handleTouchEnd() {
+            if (!isDragging || isRefreshing) return;
             
-            const pullDistance = touchCurrentY - touchStartY;
+            const pullDistance = Math.max(0, touchCurrentY - touchStartY);
             
             if (pullDistance > refreshThreshold && currentCollectionScreen) {
                 startRefresh(currentCollectionScreen);
             } else {
-                resetRefreshIndicator();
+                resetPullIndicator();
             }
             
-            touchStartY = 0;
-            touchCurrentY = 0;
+            resetPullState();
         }
 
         function handleMouseStart(e) {
@@ -722,71 +915,85 @@
             const screen = e.currentTarget;
             const scrollTop = screen.scrollTop;
             
-            if (scrollTop === 0) {
+            if (scrollTop <= 0) {
                 touchStartY = e.clientY;
                 currentCollectionScreen = screen.id.replace('CollectionScreen', '');
+                isDragging = true;
             }
         }
 
         function handleMouseMove(e) {
-            if (isRefreshing || !touchStartY) return;
+            if (!isDragging || isRefreshing) return;
             
-            const screen = e.currentTarget;
+            const screen = document.getElementById(`${currentCollectionScreen}CollectionScreen`);
+            if (!screen) return;
+            
             const scrollTop = screen.scrollTop;
             
             if (scrollTop > 0) {
-                touchStartY = 0;
+                resetPullState();
                 return;
             }
             
             touchCurrentY = e.clientY;
-            const pullDistance = touchCurrentY - touchStartY;
+            const pullDistance = Math.max(0, touchCurrentY - touchStartY);
             
             if (pullDistance > 0) {
-                updateRefreshIndicator(pullDistance);
+                updatePullIndicator(pullDistance);
             }
         }
 
-        function handleMouseEnd(e) {
-            if (isRefreshing || !touchStartY) return;
+        function handleMouseEnd() {
+            if (!isDragging || isRefreshing) return;
             
-            const pullDistance = touchCurrentY - touchStartY;
+            const pullDistance = Math.max(0, touchCurrentY - touchStartY);
             
             if (pullDistance > refreshThreshold && currentCollectionScreen) {
                 startRefresh(currentCollectionScreen);
             } else {
-                resetRefreshIndicator();
+                resetPullIndicator();
             }
             
-            touchStartY = 0;
-            touchCurrentY = 0;
+            resetPullState();
         }
 
-        function updateRefreshIndicator(pullDistance) {
-            const indicator = document.getElementById(`${currentCollectionScreen}RefreshIndicator`);
-            if (!indicator) return;
+        function updatePullIndicator(pullDistance) {
+            const spinner = document.getElementById(`${currentCollectionScreen}Spinner`);
+            if (!spinner) return;
             
-            const opacity = Math.min(pullDistance / refreshThreshold, 1);
-            indicator.style.opacity = opacity;
-            indicator.style.top = `${Math.min(pullDistance, refreshThreshold) - 50}px`;
+            // Ограничиваем максимальное расстояние
+            const clampedDistance = Math.min(pullDistance, maxPullDistance);
+            
+            // Рассчитываем прогресс от 0 до 1
+            const progress = clampedDistance / refreshThreshold;
+            
+            // Позиционируем спиннер
+            const translateY = Math.min(clampedDistance - 60, 30); // Центрируем в доступном пространстве
+            spinner.style.transform = `translateY(${translateY}px)`;
+            
+            // Увеличиваем opacity в зависимости от прогресса
+            spinner.style.opacity = Math.min(progress * 1.5, 1);
+            
+            // Включаем анимацию спиннера, если превышен порог
+            if (pullDistance > refreshThreshold) {
+                spinner.classList.add('active');
+            } else {
+                spinner.classList.remove('active');
+            }
         }
 
         function startRefresh(collectionType) {
             isRefreshing = true;
-            const indicator = document.getElementById(`${collectionType}RefreshIndicator`);
+            tg.HapticFeedback.impactOccurred('medium');
             
-            if (indicator) {
-                indicator.classList.add('active');
-                indicator.style.top = '0px';
-                indicator.style.opacity = '1';
-            }
-            
-            tg.HapticFeedback.impactOccurred('light');
+            // Показываем оверлей с анимацией
+            const overlay = document.getElementById('refreshOverlay');
+            overlay.classList.add('active');
             
             // Обновляем данные коллекции
             setTimeout(() => {
                 refreshCollectionData(collectionType);
-            }, 1000);
+            }, 800);
         }
 
         async function refreshCollectionData(collectionType) {
@@ -805,28 +1012,34 @@
             // Завершаем обновление
             setTimeout(() => {
                 finishRefresh(collectionType);
-            }, 500);
+            }, 300);
         }
 
         function finishRefresh(collectionType) {
             isRefreshing = false;
-            const indicator = document.getElementById(`${collectionType}RefreshIndicator`);
             
-            if (indicator) {
-                indicator.classList.remove('active');
-                indicator.style.top = '-50px';
-                indicator.style.opacity = '0';
+            // Скрываем оверлей
+            const overlay = document.getElementById('refreshOverlay');
+            overlay.classList.remove('active');
+            
+            // Сбрасываем индикатор
+            resetPullIndicator();
+        }
+
+        function resetPullIndicator() {
+            const spinner = document.getElementById(`${currentCollectionScreen}Spinner`);
+            if (spinner) {
+                spinner.style.transform = 'translateY(-100%)';
+                spinner.style.opacity = '0';
+                spinner.classList.remove('active');
             }
         }
 
-        function resetRefreshIndicator() {
-            if (isRefreshing) return;
-            
-            const indicator = document.getElementById(`${currentCollectionScreen}RefreshIndicator`);
-            if (indicator) {
-                indicator.style.top = '-50px';
-                indicator.style.opacity = '0';
-            }
+        function resetPullState() {
+            isDragging = false;
+            touchStartY = 0;
+            touchCurrentY = 0;
+            currentCollectionScreen = null;
         }
 
         function showPreloader() {
@@ -867,6 +1080,9 @@
             const header = document.getElementById('header');
             header.classList.add('collection-header');
             
+            // Скрываем аватарку в коллекции
+            document.getElementById('userAvatarContainer').style.display = 'none';
+            
             tg.BackButton.show();
             document.getElementById('viewToggle').classList.remove('hidden');
             renderCollection(type);
@@ -884,6 +1100,9 @@
                 
                 const header = document.getElementById('header');
                 header.classList.remove('collection-header');
+                
+                // Показываем аватарку обратно
+                document.getElementById('userAvatarContainer').style.display = 'flex';
             }
         }
 
