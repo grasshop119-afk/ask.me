@@ -8,7 +8,7 @@
             --tg-bg: var(--tg-theme-bg-color, #000000);
             --tg-accent: var(--tg-theme-button-color, #007AFF);
             --tg-text: var(--tg-theme-text-color, #ffffff);
-            --nav-bg: rgba(255, 255, 255, 0.1);
+            --nav-bg: rgba(255, 255, 255, 0.12);
         }
 
         body {
@@ -36,60 +36,60 @@
             left: 50%;
             transform: translateX(-50%);
             z-index: 1000;
-        }
-
-        /* Меню с "прогибом" под плюс */
-        .nav-island {
-            position: relative;
-            width: 320px;
-            height: 56px;
-            background: var(--nav-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 30px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 10px;
-            border: 1px solid rgba(255,255,255,0.05);
-            /* Магия прогиба через clip-path или mask (упростим для стабильности) */
+            justify-content: center;
         }
 
         /* Кнопка ПЛЮС (Акцентный Squircle) */
         .plus-btn {
             position: absolute;
-            top: -20px; /* Выпирает наполовину */
-            left: 50%;
-            transform: translateX(-50%);
-            width: 58px;
-            height: 58px;
+            top: -24px;
+            width: 62px;
+            height: 62px;
             background: var(--tg-accent);
-            border-radius: 20px; /* Тот самый мягкий квадрат */
+            border-radius: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
             z-index: 10;
             cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .plus-btn img {
-            width: 28px;
-            height: 28px;
-            filter: invert(1);
+        .plus-btn img { width: 30px; height: 30px; filter: invert(1); }
+
+        /* Остров с плавным вырезом сверху */
+        .nav-island {
+            position: relative;
+            width: 320px;
+            height: 58px;
+            background: var(--nav-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+            border: 1px solid rgba(255,255,255,0.08);
+            /* Магия "продавливания" через маску */
+            mask: radial-gradient(circle 42px at 50% -5px, transparent 100%, #000 100%);
+            -webkit-mask: radial-gradient(circle 42px at 50% -5px, transparent 99%, #000 100%);
         }
 
-        /* Блоб */
         .blob {
             position: absolute;
-            width: 44px;
-            height: 44px;
+            width: 46px;
+            height: 46px;
             background: var(--tg-accent);
             border-radius: 50%;
             z-index: 0;
+            top: 6px;
+            left: 50%; /* Стартовая позиция для анимации появления */
+            transform: translateX(-50%) scale(0);
             transition: left 0.5s cubic-bezier(0.19, 1, 0.22, 1), 
                         border-radius 0.3s ease, 
-                        transform 0.3s ease;
+                        transform 0.4s ease;
         }
 
         .stretch-right { border-radius: 40% 70% 70% 40% / 50% 50% 50% 50%; transform: scaleX(1.25); }
@@ -107,43 +107,39 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Пропуск места под плюс */
-        .spacer { width: 60px; pointer-events: none; }
+        .spacer { width: 64px; pointer-events: none; }
 
-        .nav-item img {
-            width: 22px;
-            height: 22px;
+        .nav-item img, .avatar {
+            width: 24px;
+            height: 24px;
             filter: invert(1);
             opacity: 0.3;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.3s, transform 0.2s;
         }
 
-        .nav-item.active img { opacity: 1; }
+        .nav-item.active img, .nav-item.active .avatar {
+            opacity: 1;
+            transform: scale(1.1);
+        }
 
         .avatar {
-            width: 26px;
-            height: 26px;
             border-radius: 50%;
             background-color: #333;
             background-size: cover;
-            opacity: 0.4;
         }
-        .active .avatar { opacity: 1; }
 
-        .content-area {
+        .content-placeholder {
             flex: 1;
-            margin: 10px 20px 100px;
-            background: linear-gradient(180deg, #111, #000);
+            margin: 15px 20px 110px;
+            background: linear-gradient(180deg, #121212 0%, #000 100%);
             border-radius: 40px;
-            border: 1px solid rgba(255,255,255,0.05);
         }
     </style>
 </head>
 <body>
 
     <div class="header" id="title">FOR YOU</div>
-
-    <div class="content-area"></div>
+    <div class="content-placeholder"></div>
 
     <div class="nav-wrapper">
         <div class="plus-btn" onclick="tg.HapticFeedback.impactOccurred('heavy')">
@@ -153,7 +149,7 @@
         <div class="nav-island">
             <div class="blob" id="blob"></div>
             
-            <div class="nav-item active" id="tab-0" onclick="move(0)">
+            <div class="nav-item" id="tab-0" onclick="move(0)">
                 <img src="https://cdn-icons-png.flaticon.com/512/6997/6997164.png" alt="home">
             </div>
             
@@ -180,35 +176,32 @@
 
         const blob = document.getElementById('blob');
         const items = document.querySelectorAll('.nav-item');
-        let currentIndex = 0;
+        let currentIndex = -1; // -1 чтобы первая анимация всегда срабатывала
 
         function move(index) {
             const targetItem = document.getElementById(`tab-${index}`);
             
-            // Если нажали на ту же вкладку - СЛУЧАЙНАЯ деформация
             if (index === currentIndex) {
-                const r = () => Math.floor(Math.random() * 70 + 20); // Случайные 20-90%
+                // Тот самый случайный хаос при нажатии на ту же вкладку
+                const r = () => Math.floor(Math.random() * 60 + 20);
                 blob.style.borderRadius = `${r()}% ${r()}% ${r()}% ${r()}% / ${r()}% ${r()}% ${r()}% ${r()}%`;
-                blob.style.transform = `scale(${1 + Math.random() * 0.2}) rotate(${Math.random() * 10 - 5}deg)`;
-                
-                setTimeout(() => {
-                    blob.style.borderRadius = '50%';
-                    blob.style.transform = 'scale(1) rotate(0deg)';
-                }, 300);
-                
+                setTimeout(() => blob.style.borderRadius = '50%', 300);
                 tg.HapticFeedback.notificationOccurred('success');
                 return;
             }
 
-            // Обычное движение
             items.forEach(item => item.classList.remove('active'));
             blob.classList.remove('stretch-right', 'stretch-left');
 
-            if (index > currentIndex) blob.classList.add('stretch-right');
-            else blob.classList.add('stretch-left');
+            if (currentIndex !== -1) {
+                if (index > currentIndex) blob.classList.add('stretch-right');
+                else blob.classList.add('stretch-left');
+            }
 
+            // Позиционирование
             const targetX = targetItem.offsetLeft + (targetItem.offsetWidth / 2) - (blob.offsetWidth / 2);
             blob.style.left = `${targetX}px`;
+            blob.style.transform = 'scale(1)'; // Убеждаемся что он виден
             
             targetItem.classList.add('active');
             currentIndex = index;
@@ -220,16 +213,19 @@
             tg.HapticFeedback.impactOccurred('medium');
         }
 
+        // Старт приложения
+        window.onload = () => {
+            // Маленькая задержка для красоты
+            setTimeout(() => move(0), 100);
+        };
+
         const lang = tg.initDataUnsafe.user?.language_code || 'en';
         const t = { ru: "ДЛЯ ТЕБЯ", zh: "为你推荐", en: "FOR YOU" };
         document.getElementById('title').innerText = t[lang] || t.en;
 
         if (tg.initDataUnsafe.user?.photo_url) {
             document.getElementById('pfp').style.backgroundImage = `url(${tg.initDataUnsafe.user.photo_url})`;
-            document.getElementById('pfp').style.backgroundSize = 'cover';
         }
-
-        window.onload = () => move(0);
     </script>
 </body>
 </html>
