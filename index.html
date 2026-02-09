@@ -10,11 +10,13 @@
             --tg-secondary: var(--tg-theme-secondary-bg-color, #1c1c1d);
             --tg-text: var(--tg-theme-text-color, #ffffff);
             --tg-hint: var(--tg-theme-hint-color, #999999);
-            /* Увеличенный отступ для режима Fullsize */
-            --tg-header-gap: 85px; 
-            --nav-bg: rgba(28, 28, 30, 0.85);
+            
+            /* Безопасные зоны для Fullscreen */
             --safe-top: env(safe-area-inset-top, 0px);
             --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --tg-top-safe-area: 60px; /* Отступ под системные кнопки TG */
+            
+            --nav-bg: rgba(28, 28, 30, 0.85);
             --border-style: 1px solid rgba(255, 255, 255, 0.08);
         }
 
@@ -23,99 +25,64 @@
             background-color: var(--tg-bg);
             color: var(--tg-text);
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Запрещаем скролл всему body */
         }
 
-        /* --- ФИКСИРОВАННАЯ ШАПКА --- */
-        .header-container {
+        /* --- ЗАКРЕПЛЕННЫЙ ВЕРХ --- */
+        .fixed-top {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 2000;
-            background: linear-gradient(to bottom, var(--tg-bg) 80%, transparent);
+            background: var(--tg-bg);
+            padding-top: var(--safe-top);
+        }
+
+        .header-container {
+            padding: var(--tg-top-safe-area) 25px 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: calc(var(--safe-top) + 20px) 25px 20px;
         }
 
         .header {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 900;
-            letter-spacing: -1px;
+            letter-spacing: -1.2px;
             text-transform: uppercase;
         }
 
-        /* --- КОНТЕНТ --- */
-        .main-content {
-            padding-top: var(--tg-header-gap);
-            padding-bottom: calc(var(--safe-bottom) + 120px);
-        }
-
-        /* --- СТОРИС КОНТАКТОВ --- */
         .stories-line {
             display: flex;
             overflow-x: auto;
-            padding: 10px 0 25px 20px;
+            padding: 10px 0 20px 20px;
             gap: 15px;
             scrollbar-width: none;
+            border-bottom: var(--border-style);
         }
         .stories-line::-webkit-scrollbar { display: none; }
 
-        .story-node {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            min-width: 72px;
+        /* --- СКРОЛЛ-ЗОНА КОНТЕНТА --- */
+        .scrollable-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: calc(var(--safe-top) + var(--tg-top-safe-area) + 140px) 16px calc(var(--safe-bottom) + 120px);
+            -webkit-overflow-scrolling: touch;
         }
 
-        .ring {
-            width: 68px;
-            height: 68px;
-            border-radius: 25px; /* Квадрат со скруглением в стиле TG */
-            padding: 2px;
-            background: linear-gradient(45deg, var(--tg-accent), #a336ff);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .ring.seen { background: rgba(255,255,255,0.15); }
-
-        .avatar-img {
-            width: 62px;
-            height: 62px;
-            border-radius: 22px;
-            background: var(--tg-secondary);
-            border: 2px solid var(--tg-bg);
-            object-fit: cover;
-        }
-
-        .user-label {
-            font-size: 11px;
-            color: var(--tg-text);
-            font-weight: 500;
-            opacity: 0.8;
-        }
-
-        /* --- СТОРИС-КАРТОЧКИ (ЛЕНТА) --- */
-        .story-feed {
-            padding: 0 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
+        /* --- СТОРИС-КАРТОЧКИ --- */
         .story-card {
             position: relative;
             width: 100%;
-            aspect-ratio: 9 / 14; /* Вертикальный формат сторис */
+            aspect-ratio: 9 / 14;
             background: var(--tg-secondary);
-            border-radius: 32px;
+            border-radius: 35px;
             overflow: hidden;
+            margin-bottom: 20px;
             border: var(--border-style);
         }
 
@@ -128,24 +95,11 @@
         .card-overlay {
             position: absolute;
             inset: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 40%, rgba(0,0,0,0.4) 100%);
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 50%);
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            padding: 20px;
-        }
-
-        .card-top {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .author-pfp {
-            width: 36px;
-            height: 36px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.2);
+            justify-content: flex-end;
+            padding: 25px;
         }
 
         .card-bottom {
@@ -154,23 +108,13 @@
             align-items: flex-end;
         }
 
-        .card-info .author-name {
-            font-weight: 700;
-            font-size: 16px;
-            margin-bottom: 4px;
-            display: block;
-        }
+        .author-name { font-weight: 800; font-size: 18px; margin-bottom: 5px; display: block; }
+        .caption { font-size: 14px; opacity: 0.8; }
 
-        .card-info .caption {
-            font-size: 13px;
-            opacity: 0.7;
-        }
-
-        /* --- ИКОНКИ ДЕЙСТВИЙ --- */
         .card-actions {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px;
             align-items: center;
         }
 
@@ -178,31 +122,17 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
-            -webkit-tap-highlight-color: transparent;
+            gap: 5px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
         }
 
-        .action-btn img {
-            width: 28px;
-            height: 28px;
-            filter: invert(1);
-        }
+        .action-btn img { width: 30px; height: 30px; filter: invert(1); }
+        .action-btn span { font-size: 12px; font-weight: 700; }
 
-        .action-btn span {
-            font-size: 11px;
-            font-weight: 600;
-        }
-
-        /* Репост не темнеет при нажатии */
-        .share-btn:active {
-            opacity: 1 !important;
-            transform: scale(1.1);
-        }
-
-        /* --- NAV ISLAND (ОБНОВЛЕННЫЙ) --- */
+        /* --- ВОССТАНОВЛЕННЫЙ ПОДВАЛ (ПЛАСТИЛИН) --- */
         .nav-wrapper {
             position: fixed;
-            bottom: calc(20px + var(--safe-bottom)); /* Опустили ниже */
+            bottom: calc(30px + var(--safe-bottom));
             left: 50%;
             transform: translateX(-50%);
             z-index: 3000;
@@ -211,11 +141,11 @@
         .nav-island {
             position: relative;
             width: 240px;
-            height: 64px;
+            height: 60px;
             background: var(--nav-bg);
-            backdrop-filter: blur(25px); /* Сильный блюр */
+            backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
-            border-radius: 32px;
+            border-radius: 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -225,32 +155,45 @@
 
         .blob {
             position: absolute;
-            width: 48px;
-            height: 48px;
+            width: 46px;
+            height: 46px;
             background: var(--tg-accent);
             border-radius: 50%;
             z-index: 0;
             top: 50%;
-            margin-top: -24px;
+            margin-top: -23px;
             left: 15px;
-            transition: left 0.5s cubic-bezier(0.19, 1, 0.22, 1), border-radius 0.3s ease;
+            transition: left 0.5s cubic-bezier(0.19, 1, 0.22, 1), 
+                        border-radius 0.3s ease, 
+                        transform 0.3s ease;
+        }
+
+        .stretch-right {
+            border-radius: 40% 70% 70% 40% / 50% 50% 50% 50% !important;
+            transform: scaleX(1.2) !important;
+        }
+
+        .stretch-left {
+            border-radius: 70% 40% 40% 70% / 50% 50% 50% 50% !important;
+            transform: scaleX(1.2) !important;
         }
 
         .nav-item {
             position: relative;
-            width: 55px;
+            width: 50px;
             height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 2;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .nav-item img {
             width: 26px;
             height: 26px;
             filter: invert(1);
-            opacity: 0.35;
+            opacity: 0.3;
             transition: opacity 0.3s ease;
         }
 
@@ -264,32 +207,33 @@
             background-size: cover;
             background-position: center;
             opacity: 0.4;
-            border: 1px solid rgba(255,255,255,0.1);
         }
-        .active .profile-avatar { opacity: 1; border-color: #fff; }
+        .active .profile-avatar { opacity: 1; }
 
-        .stretch-right { border-radius: 40% 70% 70% 40% / 50% 50% 50% 50%; transform: scaleX(1.15); }
-        .stretch-left { border-radius: 70% 40% 40% 70% / 50% 50% 50% 50%; transform: scaleX(1.15); }
+        /* Элементы Сториз в шапке */
+        .story-node { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 70px; }
+        .ring { width: 64px; height: 64px; border-radius: 22px; padding: 2px; background: linear-gradient(45deg, var(--tg-accent), #a336ff); display: flex; align-items: center; justify-content: center; }
+        .avatar-img { width: 58px; height: 58px; border-radius: 20px; background: var(--tg-secondary); border: 2px solid var(--tg-bg); object-fit: cover; }
+        .user-label { font-size: 10px; font-weight: 600; opacity: 0.7; }
 
     </style>
 </head>
 <body>
 
-    <div class="header-container">
-        <div class="header" id="title">ДЛЯ ТЕБЯ</div>
-    </div>
-
-    <div class="main-content">
-        <div class="stories-line" id="contacts-stories">
+    <div class="fixed-top">
+        <div class="header-container">
+            <div class="header" id="title">ДЛЯ ТЕБЯ</div>
+        </div>
+        <div class="stories-line" id="contacts-line">
             <div class="story-node">
-                <div class="ring"><div class="avatar-img" id="my-story-pfp" style="background-size:cover;"></div></div>
-                <div class="user-label">Ты</div>
+                <div class="ring"><div class="avatar-img" id="my-pfp"></div></div>
+                <div class="user-label">Вы</div>
             </div>
-            </div>
-
-        <div class="story-feed" id="main-feed">
             </div>
     </div>
+
+    <div class="scrollable-content" id="feed">
+        </div>
 
     <div class="nav-wrapper">
         <div class="nav-island">
@@ -315,36 +259,51 @@
 
         tg.SettingsButton.show();
 
-        // Данные для ленты (формат Сторис)
-        const content = [
-            { user: "Aiden Raid", text: "New look #style", img: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800", likes: "1.2k" },
-            { user: "Oliver Bennet", text: "Morning in Tokyo", img: "https://images.unsplash.com/photo-1540959733332-e9ab42bd7d0b?w=800", likes: "8.4k" },
-            { user: "Rose Oak", text: "Cooking vibe", img: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800", likes: "940" }
+        // 1. Синхронизация данных
+        const user = tg.initDataUnsafe.user;
+        if (user?.photo_url) {
+            document.getElementById('nav-pfp').style.backgroundImage = `url(${user.photo_url})`;
+            document.getElementById('my-pfp').style.backgroundImage = `url(${user.photo_url})`;
+        }
+
+        // 2. Генерация реалистичных контактов
+        const contactsLine = document.getElementById('contacts-line');
+        for(let i=0; i<10; i++) {
+            contactsLine.innerHTML += `
+                <div class="story-node">
+                    <div class="ring" style="background: ${i > 3 ? 'rgba(255,255,255,0.1)' : ''}">
+                        <img class="avatar-img" src="https://i.pravatar.cc/150?u=user${i}">
+                    </div>
+                    <div class="user-label">Контакт ${i+1}</div>
+                </div>
+            `;
+        }
+
+        // 3. Контент ленты
+        const feedData = [
+            { name: "Julian", text: "Sunset vibes", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800", likes: "1.2k" },
+            { name: "Maria", text: "City lights", img: "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800", likes: "5.6k" }
         ];
 
-        const feed = document.getElementById('main-feed');
-        content.forEach(item => {
+        const feed = document.getElementById('feed');
+        feedData.forEach(item => {
             feed.innerHTML += `
                 <div class="story-card">
-                    <img src="${item.img}" class="media" loading="lazy">
+                    <img src="${item.img}" class="media">
                     <div class="card-overlay">
-                        <div class="card-top">
-                            <img src="https://i.pravatar.cc/100?u=${item.user}" class="author-pfp">
-                            <span style="font-weight:600; font-size:14px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">${item.user}</span>
-                        </div>
                         <div class="card-bottom">
-                            <div class="card-info">
-                                <span class="author-name">${item.user}</span>
+                            <div class="info">
+                                <span class="author-name">${item.name}</span>
                                 <span class="caption">${item.text}</span>
                             </div>
                             <div class="card-actions">
-                                <div class="action-btn" onclick="like(this)">
+                                <div class="action-btn" onclick="tg.HapticFeedback.impactOccurred('heavy')">
                                     <img src="https://cdn-icons-png.flaticon.com/512/7754/7754213.png">
                                     <span>${item.likes}</span>
                                 </div>
                                 <div class="action-btn">
                                     <img src="https://cdn-icons-png.flaticon.com/512/6997/6997415.png">
-                                    <span>42</span>
+                                    <span>12</span>
                                 </div>
                                 <div class="action-btn share-btn" onclick="tg.HapticFeedback.impactOccurred('medium')">
                                     <img src="https://cdn-icons-png.flaticon.com/512/2550/2550240.png">
@@ -356,55 +315,40 @@
             `;
         });
 
-        // Контакты в сторис
-        const contactBar = document.getElementById('contacts-stories');
-        for(let i=1; i<10; i++) {
-            contactBar.innerHTML += `
-                <div class="story-node">
-                    <div class="ring viewed"><img class="avatar-img" src="https://i.pravatar.cc/150?img=${i+20}"></div>
-                    <div class="user-label">Contact ${i}</div>
-                </div>
-            `;
-        }
-
-        // Логика таббара
+        // 4. Логика таббара (Тот самый "Пластилин")
         const blob = document.getElementById('blob');
         const items = document.querySelectorAll('.nav-item');
         let currentIndex = 0;
 
         function move(index) {
             const targetItem = document.getElementById(`tab-${index}`);
+            
             if (index === currentIndex) {
+                const r = () => Math.floor(Math.random() * 8 + 46); 
+                blob.style.borderRadius = `${r()}% ${100-r()}% ${r()}% ${100-r()}% / ${100-r()}% ${r()}% ${100-r()}% ${r()}%`;
+                blob.style.transform = `scale(1.04)`;
+                setTimeout(() => { blob.style.borderRadius = ''; blob.style.transform = ''; }, 200);
                 tg.HapticFeedback.notificationOccurred('success');
                 return;
             }
+
             items.forEach(item => item.classList.remove('active'));
             blob.classList.remove('stretch-right', 'stretch-left');
+
             if (index > currentIndex) blob.classList.add('stretch-right');
             else blob.classList.add('stretch-left');
-            
+
             const targetX = targetItem.offsetLeft + (targetItem.offsetWidth / 2) - (blob.offsetWidth / 2);
             blob.style.left = `${targetX}px`;
+            
             targetItem.classList.add('active');
             currentIndex = index;
-            setTimeout(() => blob.classList.remove('stretch-right', 'stretch-left'), 200);
+
+            setTimeout(() => {
+                blob.classList.remove('stretch-right', 'stretch-left');
+            }, 200);
+
             tg.HapticFeedback.impactOccurred('medium');
-        }
-
-        function like(el) {
-            tg.HapticFeedback.impactOccurred('heavy');
-            el.style.color = '#ff3b30';
-            el.querySelector('img').style.filter = 'none';
-        }
-
-        // Установка аватара пользователя TG
-        const userPhoto = tg.initDataUnsafe.user?.photo_url;
-        if (userPhoto) {
-            document.getElementById('nav-pfp').style.backgroundImage = `url(${userPhoto})`;
-            document.getElementById('my-story-pfp').style.backgroundImage = `url(${userPhoto})`;
-        } else {
-            document.getElementById('nav-pfp').style.backgroundColor = 'var(--tg-accent)';
-            document.getElementById('my-story-pfp').style.backgroundColor = 'var(--tg-accent)';
         }
 
         window.onload = () => move(0);
