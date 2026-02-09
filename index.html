@@ -38,9 +38,10 @@
             z-index: 1000;
         }
 
+        /* Меню с "прогибом" под плюс */
         .nav-island {
             position: relative;
-            width: 220px;
+            width: 320px;
             height: 56px;
             background: var(--nav-bg);
             backdrop-filter: blur(20px);
@@ -51,9 +52,34 @@
             align-items: center;
             padding: 0 10px;
             border: 1px solid rgba(255,255,255,0.05);
+            /* Магия прогиба через clip-path или mask (упростим для стабильности) */
         }
 
-        /* Тот самый блоб */
+        /* Кнопка ПЛЮС (Акцентный Squircle) */
+        .plus-btn {
+            position: absolute;
+            top: -20px; /* Выпирает наполовину */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 58px;
+            height: 58px;
+            background: var(--tg-accent);
+            border-radius: 20px; /* Тот самый мягкий квадрат */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            z-index: 10;
+            cursor: pointer;
+        }
+
+        .plus-btn img {
+            width: 28px;
+            height: 28px;
+            filter: invert(1);
+        }
+
+        /* Блоб */
         .blob {
             position: absolute;
             width: 44px;
@@ -61,40 +87,17 @@
             background: var(--tg-accent);
             border-radius: 50%;
             z-index: 0;
-            left: 10px;
             transition: left 0.5s cubic-bezier(0.19, 1, 0.22, 1), 
                         border-radius 0.3s ease, 
                         transform 0.3s ease;
         }
 
-        /* Направленная деформация */
-        .stretch-right {
-            border-radius: 40% 70% 70% 40% / 50% 50% 50% 50%;
-            transform: scaleX(1.25);
-        }
-
-        .stretch-left {
-            border-radius: 70% 40% 40% 70% / 50% 50% 50% 50%;
-            transform: scaleX(1.25);
-        }
-
-        /* Анимация "Кляксы" при нажатии на ту же вкладку */
-        @keyframes blob-splash {
-            0% { border-radius: 50%; transform: scale(1); }
-            50% { 
-                border-radius: 30% 70% 50% 50% / 50% 30% 70% 50%; 
-                transform: scale(1.15) rotate(5deg);
-            }
-            100% { border-radius: 50%; transform: scale(1); }
-        }
-
-        .splash {
-            animation: blob-splash 0.4s ease-in-out;
-        }
+        .stretch-right { border-radius: 40% 70% 70% 40% / 50% 50% 50% 50%; transform: scaleX(1.25); }
+        .stretch-left { border-radius: 70% 40% 40% 70% / 50% 50% 50% 50%; transform: scaleX(1.25); }
 
         .nav-item {
             position: relative;
-            width: 60px;
+            width: 50px;
             height: 100%;
             display: flex;
             align-items: center;
@@ -104,32 +107,28 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        /* Пропуск места под плюс */
+        .spacer { width: 60px; pointer-events: none; }
+
         .nav-item img {
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             filter: invert(1);
             opacity: 0.3;
             transition: opacity 0.3s ease;
         }
 
-        .nav-item.active img {
-            opacity: 1;
-        }
+        .nav-item.active img { opacity: 1; }
 
         .avatar {
-            width: 28px;
-            height: 28px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
             background-color: #333;
             background-size: cover;
-            background-position: center;
             opacity: 0.4;
-            transition: opacity 0.3s;
         }
-
-        .active .avatar {
-            opacity: 1;
-        }
+        .active .avatar { opacity: 1; }
 
         .content-area {
             flex: 1;
@@ -147,6 +146,10 @@
     <div class="content-area"></div>
 
     <div class="nav-wrapper">
+        <div class="plus-btn" onclick="tg.HapticFeedback.impactOccurred('heavy')">
+            <img src="https://cdn-icons-png.flaticon.com/512/9199/9199638.png" alt="plus">
+        </div>
+
         <div class="nav-island">
             <div class="blob" id="blob"></div>
             
@@ -157,8 +160,14 @@
             <div class="nav-item" id="tab-1" onclick="move(1)">
                 <img src="https://cdn-icons-png.flaticon.com/512/8025/8025278.png" alt="search">
             </div>
-            
+
+            <div class="spacer"></div>
+
             <div class="nav-item" id="tab-2" onclick="move(2)">
+                <img src="https://cdn-icons-png.flaticon.com/512/8138/8138685.png" alt="friends">
+            </div>
+            
+            <div class="nav-item" id="tab-3" onclick="move(3)">
                 <div class="avatar" id="pfp"></div>
             </div>
         </div>
@@ -176,24 +185,27 @@
         function move(index) {
             const targetItem = document.getElementById(`tab-${index}`);
             
-            // Если нажали на ту же самую вкладку
+            // Если нажали на ту же вкладку - СЛУЧАЙНАЯ деформация
             if (index === currentIndex) {
-                blob.classList.remove('splash');
-                void blob.offsetWidth; // Рестарт анимации
-                blob.classList.add('splash');
-                tg.HapticFeedback.notificationOccurred('success'); // Легкая вибрация успеха
+                const r = () => Math.floor(Math.random() * 70 + 20); // Случайные 20-90%
+                blob.style.borderRadius = `${r()}% ${r()}% ${r()}% ${r()}% / ${r()}% ${r()}% ${r()}% ${r()}%`;
+                blob.style.transform = `scale(${1 + Math.random() * 0.2}) rotate(${Math.random() * 10 - 5}deg)`;
+                
+                setTimeout(() => {
+                    blob.style.borderRadius = '50%';
+                    blob.style.transform = 'scale(1) rotate(0deg)';
+                }, 300);
+                
+                tg.HapticFeedback.notificationOccurred('success');
                 return;
             }
 
             // Обычное движение
             items.forEach(item => item.classList.remove('active'));
-            blob.classList.remove('stretch-right', 'stretch-left', 'splash');
+            blob.classList.remove('stretch-right', 'stretch-left');
 
-            if (index > currentIndex) {
-                blob.classList.add('stretch-right');
-            } else {
-                blob.classList.add('stretch-left');
-            }
+            if (index > currentIndex) blob.classList.add('stretch-right');
+            else blob.classList.add('stretch-left');
 
             const targetX = targetItem.offsetLeft + (targetItem.offsetWidth / 2) - (blob.offsetWidth / 2);
             blob.style.left = `${targetX}px`;
@@ -201,7 +213,6 @@
             targetItem.classList.add('active');
             currentIndex = index;
 
-            // Возвращаем форму круга ЧУТЬ РАНЬШЕ (250ms вместо 350ms)
             setTimeout(() => {
                 blob.classList.remove('stretch-right', 'stretch-left');
             }, 250);
@@ -209,16 +220,15 @@
             tg.HapticFeedback.impactOccurred('medium');
         }
 
-        // Локализация
         const lang = tg.initDataUnsafe.user?.language_code || 'en';
         const t = { ru: "ДЛЯ ТЕБЯ", zh: "为你推荐", en: "FOR YOU" };
         document.getElementById('title').innerText = t[lang] || t.en;
 
         if (tg.initDataUnsafe.user?.photo_url) {
             document.getElementById('pfp').style.backgroundImage = `url(${tg.initDataUnsafe.user.photo_url})`;
+            document.getElementById('pfp').style.backgroundSize = 'cover';
         }
 
-        // Инициализация позиции
         window.onload = () => move(0);
     </script>
 </body>
