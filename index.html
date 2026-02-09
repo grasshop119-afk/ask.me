@@ -9,7 +9,6 @@
             --tg-accent: var(--tg-theme-button-color, #007AFF);
             --tg-text: var(--tg-theme-text-color, #ffffff);
             --nav-bg: rgba(255, 255, 255, 0.1);
-            /* Учет безопасных зон для полноэкранного режима */
             --safe-top: env(safe-area-inset-top, 0px);
             --safe-bottom: env(safe-area-inset-bottom, 0px);
         }
@@ -18,7 +17,7 @@
             margin: 0;
             background-color: var(--tg-bg);
             color: var(--tg-text);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, sans-serif;
             height: 100vh;
             display: flex;
             flex-direction: column;
@@ -32,8 +31,6 @@
             font-weight: 900;
             letter-spacing: -1.5px;
             text-transform: uppercase;
-            /* Учитываем заголовок в полноэкранном режиме */
-            margin-top: 10px;
         }
 
         .content-area {
@@ -42,7 +39,6 @@
             background: linear-gradient(180deg, #111, #000);
             border-radius: 35px;
             border: 1px solid rgba(255,255,255,0.05);
-            transition: all 0.3s ease;
         }
 
         .nav-wrapper {
@@ -75,24 +71,24 @@
             background: var(--tg-accent);
             border-radius: 50%;
             z-index: 0;
-            /* Центрируем вертикально внутри острова */
             top: 50%;
-            margin-top: -23px; 
+            margin-top: -23px;
             left: 10px;
+            /* Важно: transition для borderRadius должен быть таким же, как для движения */
             transition: left 0.5s cubic-bezier(0.19, 1, 0.22, 1), 
-                        border-radius 0.35s ease, 
-                        transform 0.35s ease;
+                        border-radius 0.4s ease, 
+                        transform 0.4s ease;
         }
 
-        /* Деформация при движении */
+        /* Направленная деформация при движении */
         .stretch-right {
-            border-radius: 40% 70% 70% 40% / 50% 50% 50% 50%;
-            transform: scaleX(1.2) translateY(0);
+            border-radius: 40% 70% 70% 40% / 50% 50% 50% 50% !important;
+            transform: scaleX(1.2);
         }
 
         .stretch-left {
-            border-radius: 70% 40% 40% 70% / 50% 50% 50% 50%;
-            transform: scaleX(1.2) translateY(0);
+            border-radius: 70% 40% 40% 70% / 50% 50% 50% 50% !important;
+            transform: scaleX(1.2);
         }
 
         .nav-item {
@@ -112,12 +108,11 @@
             height: 26px;
             filter: invert(1);
             opacity: 0.3;
-            transition: all 0.3s ease;
+            transition: opacity 0.3s ease;
         }
 
         .nav-item.active img {
             opacity: 1;
-            transform: scale(1.05);
         }
 
         .avatar {
@@ -128,7 +123,6 @@
             background-size: cover;
             background-position: center;
             opacity: 0.4;
-            transition: opacity 0.3s;
         }
 
         .active .avatar {
@@ -139,7 +133,6 @@
 <body>
 
     <div class="header" id="title">FOR YOU</div>
-
     <div class="content-area"></div>
 
     <div class="nav-wrapper">
@@ -163,31 +156,29 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
         const tg = window.Telegram.WebApp;
-        
-        // Настройки Fullscreen для 2026
         tg.ready();
         tg.expand();
-        if (tg.requestFullscreen) {
-            tg.requestFullscreen();
-        }
+        if (tg.requestFullscreen) tg.requestFullscreen();
 
         const blob = document.getElementById('blob');
         const items = document.querySelectorAll('.nav-item');
-        let currentIndex = -1; // Чтобы первая отрисовка сработала корректно
+        let currentIndex = -1;
 
         function move(index) {
             const targetItem = document.getElementById(`tab-${index}`);
             
-            // Если нажали на ту же вкладку — случайная деформация (Chaos Splash)
+            // Если повторное нажатие
             if (index === currentIndex) {
-                const r = () => Math.floor(Math.random() * 50 + 25); // Случайные 25-75%
+                // Уменьшенная деформация (40-60%)
+                const r = () => Math.floor(Math.random() * 20 + 40); 
                 blob.style.borderRadius = `${r()}% ${100-r()}% ${r()}% ${100-r()}% / ${100-r()}% ${r()}% ${100-r()}% ${r()}%`;
-                blob.style.transform = `scale(1.1) rotate(${Math.random() * 10 - 5}deg)`;
+                blob.style.transform = `scale(1.08)`;
                 
+                // ОЧИСТКА стилей, чтобы не ломать анимацию движения
                 setTimeout(() => {
-                    blob.style.borderRadius = '50%';
-                    blob.style.transform = 'scale(1) rotate(0deg)';
-                }, 350);
+                    blob.style.borderRadius = ''; 
+                    blob.style.transform = '';
+                }, 300);
                 
                 tg.HapticFeedback.notificationOccurred('success');
                 return;
@@ -197,44 +188,32 @@
             items.forEach(item => item.classList.remove('active'));
             blob.classList.remove('stretch-right', 'stretch-left');
 
-            // Не анимируем растяжение при самой первой загрузке
             if (currentIndex !== -1) {
-                if (index > currentIndex) {
-                    blob.classList.add('stretch-right');
-                } else {
-                    blob.classList.add('stretch-left');
-                }
+                if (index > currentIndex) blob.classList.add('stretch-right');
+                else blob.classList.add('stretch-left');
             }
 
-            // Точный расчет позиции
             const targetX = targetItem.offsetLeft + (targetItem.offsetWidth / 2) - (blob.offsetWidth / 2);
             blob.style.left = `${targetX}px`;
             
             targetItem.classList.add('active');
             currentIndex = index;
 
-            // Возврат формы
             setTimeout(() => {
                 blob.classList.remove('stretch-right', 'stretch-left');
-            }, 250);
+            }, 300);
 
-            // Виброотклик
-            if (currentIndex !== -1) {
-                tg.HapticFeedback.impactOccurred('medium');
-            }
+            if (currentIndex !== -1) tg.HapticFeedback.impactOccurred('medium');
         }
 
-        // Локализация
         const lang = tg.initDataUnsafe.user?.language_code || 'en';
         const t = { ru: "ДЛЯ ТЕБЯ", zh: "为你推荐", en: "FOR YOU" };
         document.getElementById('title').innerText = t[lang] || t.en;
 
-        // Аватар
         if (tg.initDataUnsafe.user?.photo_url) {
             document.getElementById('pfp').style.backgroundImage = `url(${tg.initDataUnsafe.user.photo_url})`;
         }
 
-        // Мягкий старт
         window.onload = () => {
             setTimeout(() => move(0), 50);
         };
