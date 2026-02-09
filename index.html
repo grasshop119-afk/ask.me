@@ -11,6 +11,8 @@
             --nav-bg: rgba(255, 255, 255, 0.1);
             --safe-top: env(safe-area-inset-top, 0px);
             --safe-bottom: env(safe-area-inset-bottom, 0px);
+            /* Отступ для заголовка под системной кнопкой Close/Settings */
+            --tg-safe-h: 60px; 
         }
 
         body {
@@ -22,25 +24,14 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            /* Базовый отступ для Fullscreen */
-            padding-top: var(--safe-top);
         }
 
         .header {
-            /* Опускаем заголовок ниже системной кнопки "Закрыть" */
-            padding: 40px 25px 10px; 
+            padding: calc(var(--safe-top) + var(--tg-safe-h)) 25px 10px;
             font-size: 34px;
             font-weight: 900;
             letter-spacing: -1.5px;
             text-transform: uppercase;
-        }
-
-        .content-area {
-            flex: 1;
-            margin: 10px 15px calc(110px + var(--safe-bottom));
-            background: linear-gradient(180deg, #111, #000);
-            border-radius: 35px;
-            border: 1px solid rgba(255,255,255,0.05);
         }
 
         .nav-wrapper {
@@ -53,16 +44,16 @@
 
         .nav-island {
             position: relative;
-            width: 280px; /* Сделали панель шире */
+            width: 240px;
             height: 60px;
             background: var(--nav-bg);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
             border-radius: 30px;
             display: flex;
-            justify-content: space-around; /* Равномерно распределяем иконки */
+            justify-content: space-between; /* Раздвигаем иконки */
             align-items: center;
-            padding: 0 15px;
+            padding: 0 15px; /* Увеличили боковые отступы */
             border: 1px solid rgba(255,255,255,0.08);
         }
 
@@ -76,6 +67,7 @@
             top: 50%;
             margin-top: -23px;
             left: 15px;
+            /* Плавность движения */
             transition: left 0.5s cubic-bezier(0.19, 1, 0.22, 1), 
                         border-radius 0.3s ease, 
                         transform 0.3s ease;
@@ -93,7 +85,7 @@
 
         .nav-item {
             position: relative;
-            width: 60px; /* Увеличили область нажатия */
+            width: 50px;
             height: 100%;
             display: flex;
             align-items: center;
@@ -133,7 +125,6 @@
 <body>
 
     <div class="header" id="title">FOR YOU</div>
-    <div class="content-area"></div>
 
     <div class="nav-wrapper">
         <div class="nav-island">
@@ -158,11 +149,8 @@
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
-        
-        // Включаем Fullscreen режим, если поддерживается
-        if (tg.requestFullscreen) {
-            tg.requestFullscreen();
-        }
+        // Включаем Fullscreen если доступно
+        if (tg.requestFullscreen) tg.requestFullscreen();
 
         const blob = document.getElementById('blob');
         const items = document.querySelectorAll('.nav-item');
@@ -172,8 +160,8 @@
             const targetItem = document.getElementById(`tab-${index}`);
             
             if (index === currentIndex) {
-                // Деликатная случайная деформация
-                const r = () => Math.floor(Math.random() * 15 + 42); 
+                // Легкая случайная деформация (еще меньше диапазон)
+                const r = () => Math.floor(Math.random() * 10 + 45); 
                 blob.style.borderRadius = `${r()}% ${100-r()}% ${r()}% ${100-r()}% / ${100-r()}% ${r()}% ${100-r()}% ${r()}%`;
                 blob.style.transform = `scale(1.05)`;
                 
@@ -200,7 +188,7 @@
             targetItem.classList.add('active');
             currentIndex = index;
 
-            // Завершение деформации чуть раньше (200ms)
+            // Конец деформации ЧУТЬ РАНЬШЕ (200ms)
             setTimeout(() => {
                 blob.classList.remove('stretch-right', 'stretch-left');
             }, 200);
@@ -217,7 +205,7 @@
         }
 
         window.onload = () => {
-            setTimeout(() => move(0), 100);
+            setTimeout(() => move(0), 50);
         };
     </script>
 </body>
