@@ -1,96 +1,475 @@
-<style>
-    .feed-container {
-        flex: 1;
-        overflow-y: auto;
-        padding: 0 15px;
-        /* Скрываем скроллбар */
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-    .feed-container::-webkit-scrollbar { display: none; }
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <style>
+        :root {
+            --tg-bg: var(--tg-theme-bg-color, #000000);
+            --tg-accent: var(--tg-theme-button-color, #007AFF);
+            --tg-secondary: #1c1c1e; /* Глубокий серый как в iOS/TG */
+            --tg-text: var(--tg-theme-text-color, #ffffff);
+            --nav-bg: rgba(28, 28, 30, 0.85); /* Полупрозрачный матовый */
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --tg-safe-h: 50px; 
+        }
 
-    /* Блок сторис */
-    .stories-row {
-        display: flex;
-        gap: 12px;
-        padding: 10px 0 20px;
-        overflow-x: auto;
-    }
-    .story-card {
-        min-width: 85px;
-        height: 120px;
-        background: #1a1a1a;
-        border-radius: 20px;
-        position: relative;
-        overflow: hidden;
-        border: 1px solid rgba(255,255,255,0.05);
-    }
-    .story-card img { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; }
-    .story-name {
-        position: absolute;
-        bottom: 8px;
-        left: 8px;
-        font-size: 10px;
-        font-weight: 600;
-    }
+        * {
+            box-sizing: border-box;
+            -webkit-user-select: none;
+        }
 
-    /* Основной пост */
-    .post-card {
-        background: #111;
-        border-radius: 28px;
-        margin-bottom: 15px;
-        padding: 15px;
-        border: 1px solid rgba(255,255,255,0.03);
-    }
-    .post-header {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 12px;
-    }
-    .post-avatar { width: 35px; height: 35px; border-radius: 50%; background: #333; }
-    .post-image {
-        width: 100%;
-        aspect-ratio: 1/1;
-        background: #1a1a1a;
-        border-radius: 20px;
-        margin-bottom: 12px;
-        object-fit: cover;
-    }
-    .post-actions {
-        display: flex;
-        justify-content: space-between;
-        padding: 0 5px;
-    }
-    .action-group { display: flex; gap: 15px; color: rgba(255,255,255,0.6); font-size: 14px; }
-</style>
+        body {
+            margin: 0;
+            background-color: var(--tg-bg);
+            color: var(--tg-text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
 
-<div class="feed-container">
-    <div class="stories-row">
-        <div class="story-card" style="border: 2px solid var(--tg-accent);">
-            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:24px;">+</div>
-            <span class="story-name">Add Story</span>
-        </div>
-        <div class="story-card"><img src="https://picsum.photos/200/300?1"><span class="story-name">Alex</span></div>
-        <div class="story-card"><img src="https://picsum.photos/200/300?2"><span class="story-name">Maria</span></div>
-        <div class="story-card"><img src="https://picsum.photos/200/300?3"><span class="story-name">Studio</span></div>
-    </div>
+        /* --- ШАПКА --- */
+        .header-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: linear-gradient(to bottom, var(--tg-bg) 60%, transparent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: calc(var(--safe-top) + 15px) 20px 15px;
+        }
 
-    <div class="post-card">
-        <div class="post-header">
-            <div class="post-avatar" style="background-image: url('https://picsum.photos/100'); background-size: cover;"></div>
-            <div>
-                <div style="font-weight: 700; font-size: 15px;">design_flow</div>
-                <div style="font-size: 11px; opacity: 0.5;">2 hours ago</div>
+        .header {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+        }
+
+        .header-icons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .icon-btn {
+            width: 32px;
+            height: 32px;
+            background: var(--tg-secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .icon-btn img {
+            width: 18px;
+            height: 18px;
+            filter: invert(1);
+        }
+
+        /* --- ГЛАВНЫЙ СКРОЛЛ --- */
+        .main-content {
+            flex: 1;
+            overflow-y: scroll;
+            padding-top: calc(var(--safe-top) + 80px);
+            padding-bottom: calc(120px + var(--safe-bottom));
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Сториз */
+        .stories-row {
+            display: flex;
+            gap: 14px;
+            padding: 0 20px 20px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .stories-row::-webkit-scrollbar { display: none; }
+
+        .story-item {
+            flex-shrink: 0;
+            width: 68px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .story-avatar {
+            width: 68px;
+            height: 68px;
+            border-radius: 24px;
+            padding: 3px;
+            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+        }
+
+        .story-avatar .img-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 21px;
+            background: #222;
+            border: 2px solid var(--tg-bg);
+            background-size: cover;
+            background-position: center;
+        }
+
+        .story-name {
+            font-size: 11px;
+            font-weight: 500;
+            opacity: 0.7;
+        }
+
+        /* Карточки постов */
+        .feed-card {
+            margin: 0 16px 20px;
+            background: var(--tg-secondary);
+            border-radius: 28px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card-image {
+            width: 100%;
+            aspect-ratio: 4/5;
+            background: #252525;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .card-overlay {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .card-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-pic {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #444;
+            background-size: cover;
+        }
+
+        .user-info .name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .user-info .meta {
+            font-size: 12px;
+            opacity: 0.5;
+        }
+
+        .card-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 5px;
+        }
+
+        .action-group {
+            display: flex;
+            gap: 20px;
+        }
+
+        .action-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .action-item img {
+            width: 22px;
+            height: 22px;
+            filter: invert(1);
+        }
+
+        /* --- ПОДВАЛ (НАВИГАЦИЯ) --- */
+        .nav-wrapper {
+            position: fixed;
+            bottom: calc(30px + var(--safe-bottom));
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+        }
+
+        .nav-island {
+            position: relative;
+            width: 260px;
+            height: 64px;
+            background: var(--nav-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 18px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .blob {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: var(--tg-accent);
+            border-radius: 50%;
+            z-index: 0;
+            top: 50%;
+            margin-top: -25px;
+            left: 18px;
+            transition: left 0.5s cubic-bezier(0.19, 1, 0.22, 1), 
+                        border-radius 0.3s ease, 
+                        transform 0.3s ease;
+        }
+
+        .stretch-right { border-radius: 40% 70% 70% 40% / 50% 50% 50% 50% !important; transform: scaleX(1.18) !important; }
+        .stretch-left { border-radius: 70% 40% 40% 70% / 50% 50% 50% 50% !important; transform: scaleX(1.18) !important; }
+
+        .nav-item {
+            position: relative;
+            width: 54px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .nav-item img {
+            width: 24px;
+            height: 24px;
+            filter: invert(1);
+            opacity: 0.35;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item.active img {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .pfp-nav {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #444;
+            background-size: cover;
+            border: 2px solid transparent;
+            opacity: 0.4;
+        }
+        .active .pfp-nav { opacity: 1; border-color: white; }
+
+        /* Всплывающие реакции (TG style) */
+        .reaction-pop {
+            position: absolute;
+            pointer-events: none;
+            animation: flyUp 0.8s ease-out forwards;
+            font-size: 24px;
+            z-index: 200;
+        }
+
+        @keyframes flyUp {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            30% { opacity: 1; transform: translateY(-20px) scale(1.2); }
+            100% { transform: translateY(-100px) scale(1); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-container">
+        <div class="header" id="title">FOR YOU</div>
+        <div class="header-icons">
+            <div class="icon-btn" onclick="tg.HapticFeedback.impactOccurred('light')">
+                <img src="https://cdn-icons-png.flaticon.com/512/54/54481.png" alt="search">
+            </div>
+            <div class="icon-btn" onclick="tg.HapticFeedback.impactOccurred('light')">
+                <img src="https://cdn-icons-png.flaticon.com/512/3602/3602145.png" alt="notif">
             </div>
         </div>
-        <img class="post-image" src="https://picsum.photos/500/500?random=1">
-        <div class="post-actions">
-            <div class="action-group">
-                <span>❤️ 2.4k</span>
-                <span>💬 128</span>
+    </div>
+
+    <div class="main-content" id="feed-container">
+        <div class="stories-row">
+            <div class="story-item" onclick="viewStory('You')">
+                <div class="story-avatar" style="background: var(--tg-secondary);">
+                    <div class="img-inner" id="my-story-pfp">+</div>
+                </div>
+                <div class="story-name">My Story</div>
             </div>
-            <div style="opacity: 0.5;">✈️</div>
+            <script>
+                const names = ['Aiden', 'Julia', 'Oliver', 'Rose', 'James', 'Karina'];
+                document.write(names.map(name => `
+                    <div class="story-item" onclick="viewStory('${name}')">
+                        <div class="story-avatar">
+                            <div class="img-inner" style="background-image: url('https://i.pravatar.cc/150?u=${name}')"></div>
+                        </div>
+                        <div class="story-name">${name}</div>
+                    </div>
+                `).join(''));
+            </script>
+        </div>
+
+        <div id="posts-feed">
+            <div class="feed-card">
+                <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800')"></div>
+                <div class="card-overlay">
+                    <div class="card-user">
+                        <div class="user-pic" style="background-image: url('https://i.pravatar.cc/150?u=aiden')"></div>
+                        <div class="user-info">
+                            <div class="name">Aiden Raid</div>
+                            <div class="meta">3h ago • Tokyo</div>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <div class="action-group">
+                            <div class="action-item" onclick="react(this, '❤️')">
+                                <img src="https://cdn-icons-png.flaticon.com/512/1077/1077035.png">
+                                <span>37k</span>
+                            </div>
+                            <div class="action-item">
+                                <img src="https://cdn-icons-png.flaticon.com/512/1380/1380338.png">
+                                <span>200</span>
+                            </div>
+                        </div>
+                        <div class="icon-btn" style="background: transparent;">
+                            <img src="https://cdn-icons-png.flaticon.com/512/2550/2550209.png" style="width:20px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feed-card">
+                <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800')"></div>
+                <div class="card-overlay">
+                    <div class="card-user">
+                        <div class="user-pic" style="background-image: url('https://i.pravatar.cc/150?u=rose')"></div>
+                        <div class="user-info">
+                            <div class="name">Rose Oak</div>
+                            <div class="meta">5h ago • Cyberpunk City</div>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <div class="action-group">
+                            <div class="action-item" onclick="react(this, '🔥')">
+                                <img src="https://cdn-icons-png.flaticon.com/512/1077/1077035.png">
+                                <span>12k</span>
+                            </div>
+                            <div class="action-item">
+                                <img src="https://cdn-icons-png.flaticon.com/512/1380/1380338.png">
+                                <span>89</span>
+                            </div>
+                        </div>
+                        <div class="icon-btn" style="background: transparent;">
+                            <img src="https://cdn-icons-png.flaticon.com/512/2550/2550209.png" style="width:20px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+
+    <div class="nav-wrapper">
+        <div class="nav-island">
+            <div class="blob" id="blob"></div>
+            <div class="nav-item" id="tab-0" onclick="move(0)">
+                <img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png">
+            </div>
+            <div class="nav-item" id="tab-1" onclick="move(1)">
+                <img src="https://cdn-icons-png.flaticon.com/512/2151/2151756.png">
+            </div>
+            <div class="nav-item" id="tab-2" onclick="move(2)">
+                <div class="pfp-nav" id="pfp-nav-img"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+        if (tg.requestFullscreen) tg.requestFullscreen();
+
+        tg.SettingsButton.show();
+        tg.SettingsButton.onClick(() => tg.HapticFeedback.impactOccurred('light'));
+
+        const blob = document.getElementById('blob');
+        const items = document.querySelectorAll('.nav-item');
+        let currentIndex = -1;
+
+        function move(index) {
+            const targetItem = document.getElementById(`tab-${index}`);
+            if (index === currentIndex) {
+                const r = () => Math.floor(Math.random() * 8 + 46); 
+                blob.style.borderRadius = `${r()}% ${100-r()}% ${r()}% ${100-r()}% / ${100-r()}% ${r()}% ${100-r()}% ${r()}%`;
+                blob.style.transform = `scale(1.04)`;
+                setTimeout(() => { blob.style.borderRadius = ''; blob.style.transform = ''; }, 200);
+                tg.HapticFeedback.notificationOccurred('success');
+                return;
+            }
+            items.forEach(item => item.classList.remove('active'));
+            blob.classList.remove('stretch-right', 'stretch-left');
+            if (currentIndex !== -1) {
+                if (index > currentIndex) blob.classList.add('stretch-right');
+                else blob.classList.add('stretch-left');
+            }
+            const targetX = targetItem.offsetLeft + (targetItem.offsetWidth / 2) - (blob.offsetWidth / 2);
+            blob.style.left = `${targetX}px`;
+            targetItem.classList.add('active');
+            currentIndex = index;
+            setTimeout(() => { blob.classList.remove('stretch-right', 'stretch-left'); }, 180);
+            if (currentIndex !== -1) tg.HapticFeedback.impactOccurred('medium');
+        }
+
+        // Логика реакций (TG style)
+        function react(el, emoji) {
+            tg.HapticFeedback.impactOccurred('light');
+            const pop = document.createElement('div');
+            pop.className = 'reaction-pop';
+            pop.innerText = emoji;
+            const rect = el.getBoundingClientRect();
+            pop.style.left = `${rect.left + 10}px`;
+            pop.style.top = `${rect.top - 20}px`;
+            document.body.appendChild(pop);
+            setTimeout(() => pop.remove(), 800);
+        }
+
+        // Инициализация данных пользователя
+        const user = tg.initDataUnsafe.user;
+        if (user) {
+            const pfpUrl = user.photo_url || 'https://i.pravatar.cc/150?u=' + user.id;
+            document.getElementById('pfp-nav-img').style.backgroundImage = `url(${pfpUrl})`;
+            if(document.getElementById('my-story-pfp')) {
+                document.getElementById('my-story-pfp').style.backgroundImage = `url(${pfpUrl})`;
+                document.getElementById('my-story-pfp').innerText = '';
+            }
+            
+            const lang = user.language_code || 'en';
+            const t = { ru: "ДЛЯ ТЕБЯ", en: "FOR YOU" };
+            document.getElementById('title').innerText = t[lang] || t.en;
+        }
+
+        window.onload = () => setTimeout(() => move(0), 100);
+    </script>
+</body>
+</html>
