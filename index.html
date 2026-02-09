@@ -11,26 +11,25 @@
             --nav-bg: rgba(255, 255, 255, 0.1);
             --safe-top: env(safe-area-inset-top, 0px);
             --safe-bottom: env(safe-area-inset-bottom, 0px);
-            --tg-safe-h: 50px; 
+            --tg-safe-h: 60px; 
         }
 
         body {
             margin: 0;
             background-color: var(--tg-bg);
             color: var(--tg-text);
-            font-family: -apple-system, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             height: 100vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
 
-        /* Контейнер для заголовка и кнопки сторис */
         .header-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: calc(var(--safe-top) + var(--tg-safe-h)) 20px 10px 25px;
+            padding: calc(var(--safe-top) + var(--tg-safe-h)) 25px 10px;
         }
 
         .header {
@@ -38,30 +37,6 @@
             font-weight: 900;
             letter-spacing: -1.5px;
             text-transform: uppercase;
-        }
-
-        .add-story-btn {
-            width: 38px;
-            height: 38px;
-            background: var(--nav-bg);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(10px);
-            -webkit-tap-highlight-color: transparent;
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .add-story-btn:active {
-            transform: scale(0.9);
-        }
-
-        .add-story-btn img {
-            width: 18px;
-            height: 18px;
-            filter: invert(1);
         }
 
         .nav-wrapper {
@@ -102,8 +77,15 @@
                         transform 0.3s ease;
         }
 
-        .stretch-right { border-radius: 40% 70% 70% 40% / 50% 50% 50% 50% !important; transform: scaleX(1.18) !important; }
-        .stretch-left { border-radius: 70% 40% 40% 70% / 50% 50% 50% 50% !important; transform: scaleX(1.18) !important; }
+        .stretch-right {
+            border-radius: 40% 70% 70% 40% / 50% 50% 50% 50% !important;
+            transform: scaleX(1.18) !important;
+        }
+
+        .stretch-left {
+            border-radius: 70% 40% 40% 70% / 50% 50% 50% 50% !important;
+            transform: scaleX(1.18) !important;
+        }
 
         .nav-item {
             position: relative;
@@ -117,27 +99,68 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        .nav-item img { width: 26px; height: 26px; filter: invert(1); opacity: 0.3; transition: opacity 0.3s ease; }
-        .nav-item.active img { opacity: 1; }
-        .avatar { width: 28px; height: 28px; border-radius: 50%; background-color: #333; background-size: cover; background-position: center; opacity: 0.4; }
-        .active .avatar { opacity: 1; }
+        /* Стиль для нативных иконок */
+        .nav-item svg {
+            width: 28px;
+            height: 28px;
+            fill: none;
+            stroke: white;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            opacity: 0.3;
+            transition: opacity 0.3s ease;
+        }
+
+        .nav-item.active svg {
+            opacity: 1;
+        }
+
+        .avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background-color: #333;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.4;
+            /* Рамка для аватара в стиле Telegram */
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .active .avatar {
+            opacity: 1;
+            border-color: rgba(255,255,255,0.5);
+        }
     </style>
 </head>
 <body>
 
     <div class="header-container">
         <div class="header" id="title">ДЛЯ ТЕБЯ</div>
-        <div class="add-story-btn" onclick="openStoryMenu()">
-            <img src="https://cdn-icons-png.flaticon.com/512/9199/9199638.png" alt="add">
-        </div>
     </div>
 
     <div class="nav-wrapper">
         <div class="nav-island">
             <div class="blob" id="blob"></div>
-            <div class="nav-item" id="tab-0" onclick="move(0)"><img src="https://cdn-icons-png.flaticon.com/512/6997/6997164.png"></div>
-            <div class="nav-item" id="tab-1" onclick="move(1)"><img src="https://cdn-icons-png.flaticon.com/512/8025/8025278.png"></div>
-            <div class="nav-item" id="tab-2" onclick="move(2)"><div class="avatar" id="pfp"></div></div>
+            
+            <div class="nav-item" id="tab-0" onclick="move(0)">
+                <svg viewBox="0 0 24 24">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+            </div>
+            
+            <div class="nav-item" id="tab-1" onclick="move(1)">
+                <svg viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </div>
+            
+            <div class="nav-item" id="tab-2" onclick="move(2)">
+                <div class="avatar" id="pfp"></div>
+            </div>
         </div>
     </div>
 
@@ -148,18 +171,17 @@
         tg.expand();
         if (tg.requestFullscreen) tg.requestFullscreen();
 
-        function openStoryMenu() {
-            tg.HapticFeedback.impactOccurred('medium');
-            tg.showActionSheet({
-                title: 'Новая публикация',
+        tg.SettingsButton.show();
+        tg.SettingsButton.onClick(() => {
+            tg.HapticFeedback.impactOccurred('heavy');
+            tg.showPopup({
+                title: 'Меню',
                 buttons: [
-                    {id: 'camera', text: 'Снять сторис 📸'},
-                    {id: 'gallery', text: 'Выбрать из галереи 🖼️'},
+                    {id: 'story', type: 'default', text: 'Новый сторис'},
+                    {type: 'cancel', text: 'Отмена'}
                 ]
-            }, (id) => {
-                if (id) alert('Выбрано: ' + id);
             });
-        }
+        });
 
         const blob = document.getElementById('blob');
         const items = document.querySelectorAll('.nav-item');
@@ -167,33 +189,50 @@
 
         function move(index) {
             const targetItem = document.getElementById(`tab-${index}`);
+            
             if (index === currentIndex) {
                 const r = () => Math.floor(Math.random() * 8 + 46); 
                 blob.style.borderRadius = `${r()}% ${100-r()}% ${r()}% ${100-r()}% / ${100-r()}% ${r()}% ${100-r()}% ${r()}%`;
                 blob.style.transform = `scale(1.04)`;
-                setTimeout(() => { blob.style.borderRadius = ''; blob.style.transform = ''; }, 200);
+                setTimeout(() => {
+                    blob.style.borderRadius = ''; 
+                    blob.style.transform = '';
+                }, 200);
                 tg.HapticFeedback.notificationOccurred('success');
                 return;
             }
+
             items.forEach(item => item.classList.remove('active'));
             blob.classList.remove('stretch-right', 'stretch-left');
+
             if (currentIndex !== -1) {
                 if (index > currentIndex) blob.classList.add('stretch-right');
                 else blob.classList.add('stretch-left');
             }
+
             const targetX = targetItem.offsetLeft + (targetItem.offsetWidth / 2) - (blob.offsetWidth / 2);
             blob.style.left = `${targetX}px`;
             targetItem.classList.add('active');
             currentIndex = index;
-            setTimeout(() => { blob.classList.remove('stretch-right', 'stretch-left'); }, 180);
+
+            setTimeout(() => {
+                blob.classList.remove('stretch-right', 'stretch-left');
+            }, 180);
+
             if (currentIndex !== -1) tg.HapticFeedback.impactOccurred('medium');
         }
 
         const lang = tg.initDataUnsafe.user?.language_code || 'en';
-        const t = { ru: "ДЛЯ ТЕБЯ", en: "FOR YOU" };
+        const t = { ru: "ДЛЯ ТЕБЯ", zh: "为你推荐", en: "FOR YOU" };
         document.getElementById('title').innerText = t[lang] || t.en;
-        if (tg.initDataUnsafe.user?.photo_url) document.getElementById('pfp').style.backgroundImage = `url(${tg.initDataUnsafe.user.photo_url})`;
-        window.onload = () => setTimeout(() => move(0), 50);
+
+        if (tg.initDataUnsafe.user?.photo_url) {
+            document.getElementById('pfp').style.backgroundImage = `url(${tg.initDataUnsafe.user.photo_url})`;
+        }
+
+        window.onload = () => {
+            setTimeout(() => move(0), 50);
+        };
     </script>
 </body>
 </html>
