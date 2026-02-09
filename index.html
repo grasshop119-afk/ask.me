@@ -5,385 +5,229 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <style>
         :root {
-            /* Системные цвета Telegram */
             --tg-bg: var(--tg-theme-bg-color, #000000);
             --tg-accent: var(--tg-theme-button-color, #007AFF);
-            --tg-secondary: var(--tg-theme-secondary-bg-color, #1c1c1d);
             --tg-text: var(--tg-theme-text-color, #ffffff);
-            --tg-hint: var(--tg-theme-hint-color, #999999);
-            
-            /* Переменные интерфейса */
+            --nav-bg: rgba(255, 255, 255, 0.1);
             --safe-top: env(safe-area-inset-top, 0px);
             --safe-bottom: env(safe-area-inset-bottom, 0px);
-            --header-height: 140px;
-            --glass: blur(25px) saturate(180%) cubic-bezier(0.4, 0, 0.2, 1);
-            --border: 1px solid rgba(255, 255, 255, 0.08);
-            --card-img: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80');
-        }
-
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-            outline: none;
+            --tg-safe-h: 60px; 
         }
 
         body {
             margin: 0;
             background-color: var(--tg-bg);
             color: var(--tg-text);
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+            font-family: -apple-system, sans-serif;
             height: 100vh;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
-        /* --- ФИКСИРОВАННАЯ ШАПКА --- */
-        .header-fixed {
+        /* Контейнер заголовка с учетом системных кнопок */
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: calc(var(--safe-top) + var(--tg-safe-h)) 25px 10px;
+        }
+
+        .header {
+            font-size: 34px;
+            font-weight: 900;
+            letter-spacing: -1.5px;
+            text-transform: uppercase;
+        }
+
+        .nav-wrapper {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
+            bottom: calc(30px + var(--safe-bottom));
+            left: 50%;
+            transform: translateX(-50%);
             z-index: 1000;
-            background: rgba(var(--tg-theme-bg-color-rgb, 0,0,0), 0.7);
-            backdrop-filter: var(--glass);
-            -webkit-backdrop-filter: var(--glass);
-            border-bottom: var(--border);
-            padding-top: var(--safe-top);
         }
 
-        .header-content {
-            padding: 15px 20px 5px;
+        .nav-island {
+            position: relative;
+            width: 240px;
+            height: 60px;
+            background: var(--nav-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: 800;
-            letter-spacing: -0.8px;
-            text-transform: lowercase;
-        }
-
-        .logo span {
-            color: var(--tg-accent);
-        }
-
-        /* --- СТОРИС (ГОРИЗОНТАЛЬНЫЕ) --- */
-        .stories-container {
-            display: flex;
-            overflow-x: auto;
-            padding: 10px 0 15px 20px;
-            gap: 14px;
-            scrollbar-width: none;
-        }
-        .stories-container::-webkit-scrollbar { display: none; }
-
-        .story-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 7px;
-            min-width: 65px;
-        }
-
-        .ring-modern {
-            width: 64px;
-            height: 64px;
-            border-radius: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, var(--tg-accent) 0%, rgba(255,255,255,0.2) 100%);
-            padding: 1.5px;
-        }
-
-        .story-avatar {
-            width: 100%;
-            height: 100%;
-            border-radius: 22.5px;
-            background: var(--tg-secondary);
-            border: 2px solid var(--tg-bg);
-            background-image: var(--card-img);
-            background-size: cover;
-            background-position: center;
-        }
-
-        .story-name {
-            font-size: 11px;
-            font-weight: 500;
-            opacity: 0.6;
-        }
-
-        /* --- ЛЕНТА КОНТЕНТА --- */
-        .main-feed {
-            flex: 1;
-            overflow-y: auto;
-            padding: calc(var(--header-height) + var(--safe-top) + 20px) 16px calc(var(--safe-bottom) + 100px);
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .modern-card {
-            position: relative;
-            width: 100%;
-            border-radius: 32px;
-            background: var(--tg-secondary);
-            overflow: hidden;
-            border: var(--border);
-            transition: transform 0.3s ease;
-        }
-
-        .modern-card:active {
-            transform: scale(0.98);
-        }
-
-        .card-media {
-            width: 100%;
-            aspect-ratio: 4 / 5;
-            background-image: var(--card-img);
-            background-size: cover;
-            background-position: center;
-        }
-
-        .card-glass-bottom {
-            position: absolute;
-            bottom: 12px;
-            left: 12px;
-            right: 12px;
-            background: rgba(28, 28, 30, 0.4);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border-radius: 24px;
-            padding: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .card-author {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .author-title {
-            font-weight: 700;
-            font-size: 15px;
-        }
-
-        .author-sub {
-            font-size: 12px;
-            opacity: 0.6;
-        }
-
-        .card-actions-row {
-            display: flex;
-            gap: 8px;
-        }
-
-        .btn-circle {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .btn-circle img {
-            width: 20px;
-            height: 20px;
-            filter: invert(1);
-        }
-
-        /* --- ТАББАР (ПЛАСТИЛИН) --- */
-        .nav-container {
-            position: fixed;
-            bottom: calc(20px + var(--safe-bottom));
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: center;
-            z-index: 2000;
-            pointer-events: none;
-        }
-
-        .nav-bar {
-            pointer-events: auto;
-            position: relative;
-            width: 260px;
-            height: 68px;
-            background: rgba(20, 20, 20, 0.8);
-            backdrop-filter: var(--glass);
-            -webkit-backdrop-filter: var(--glass);
-            border-radius: 34px;
-            border: var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-            padding: 0 12px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            padding: 0 15px;
+            border: 1px solid rgba(255,255,255,0.08);
         }
 
         .blob {
             position: absolute;
-            width: 54px;
-            height: 54px;
+            width: 46px;
+            height: 46px;
             background: var(--tg-accent);
             border-radius: 50%;
             z-index: 0;
-            left: 14px;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            top: 50%;
+            margin-top: -23px;
+            left: 15px;
+            transition: left 0.5s cubic-bezier(0.19, 1, 0.22, 1), 
+                        border-radius 0.3s ease, 
+                        transform 0.3s ease;
         }
 
-        .nav-link {
+        /* Деформация при движении (важно: !important чтобы перебивать инлайновые стили) */
+        .stretch-right {
+            border-radius: 40% 70% 70% 40% / 50% 50% 50% 50% !important;
+            transform: scaleX(1.18) !important;
+        }
+
+        .stretch-left {
+            border-radius: 70% 40% 40% 70% / 50% 50% 50% 50% !important;
+            transform: scaleX(1.18) !important;
+        }
+
+        .nav-item {
             position: relative;
-            z-index: 10;
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
+            z-index: 2;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .nav-link img {
+        .nav-item img {
             width: 26px;
             height: 26px;
             filter: invert(1);
+            opacity: 0.3;
+            transition: opacity 0.3s ease;
+        }
+
+        .nav-item.active img { opacity: 1; }
+
+        .avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background-color: #333;
+            background-size: cover;
+            background-position: center;
             opacity: 0.4;
-            transition: 0.3s ease;
         }
 
-        .nav-link.active img {
-            opacity: 1;
-            transform: scale(1.1);
-        }
-
-        /* КЛАССЫ РАСТЯЖЕНИЯ ДЛЯ ПЛАСТИЛИНА */
-        .stretch-r { border-radius: 30% 70% 70% 30% / 50%; transform: scaleX(1.2); }
-        .stretch-l { border-radius: 70% 30% 30% 70% / 50%; transform: scaleX(1.2); }
-
-        /* СПЕЦИАЛЬНАЯ SHARE КНОПКА */
-        .share-btn:active {
-            transform: none !important; /* Не затемнять и не уменьшать по запросу */
-        }
-
+        .active .avatar { opacity: 1; }
     </style>
 </head>
 <body>
 
-    <header class="header-fixed">
-        <div class="header-content">
-            <div class="logo">feed<span>.</span>app</div>
-            <div class="btn-circle" style="width: 36px; height: 36px;">
-                <img src="https://cdn-icons-png.flaticon.com/512/1159/1159641.png" style="width:16px;">
-            </div>
-        </div>
-        <div class="stories-container" id="stories">
-            </div>
-    </header>
+    <div class="header-container">
+        <div class="header" id="title">ДЛЯ ТЕБЯ</div>
+    </div>
 
-    <main class="main-feed" id="feed">
-        </main>
-
-    <nav class="nav-container">
-        <div class="nav-bar">
+    <div class="nav-wrapper">
+        <div class="nav-island">
             <div class="blob" id="blob"></div>
-            <div class="nav-link active" onclick="moveBlob(0, this)">
-                <img src="https://cdn-icons-png.flaticon.com/512/1946/1946488.png">
+            
+            <div class="nav-item" id="tab-0" onclick="move(0)">
+                <img src="https://cdn-icons-png.flaticon.com/512/6997/6997164.png" alt="home">
             </div>
-            <div class="nav-link" onclick="moveBlob(1, this)">
-                <img src="https://cdn-icons-png.flaticon.com/512/2151/2151141.png">
+            
+            <div class="nav-item" id="tab-1" onclick="move(1)">
+                <img src="https://cdn-icons-png.flaticon.com/512/8025/8025278.png" alt="search">
             </div>
-            <div class="nav-link" onclick="moveBlob(2, this)">
-                <img src="https://cdn-icons-png.flaticon.com/512/1144/1144760.png">
+            
+            <div class="nav-item" id="tab-2" onclick="move(2)">
+                <div class="avatar" id="pfp"></div>
             </div>
         </div>
-    </nav>
+    </div>
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
+        if (tg.requestFullscreen) tg.requestFullscreen();
 
-        // 1. Рендер сторис
-        const storiesBox = document.getElementById('stories');
-        for(let i=0; i<8; i++) {
-            storiesBox.innerHTML += `
-                <div class="story-item">
-                    <div class="ring-modern">
-                        <div class="story-avatar"></div>
-                    </div>
-                    <div class="story-name">${i === 0 ? 'Ваша' : 'User '+i}</div>
-                </div>
-            `;
-        }
+        // ВКЛЮЧАЕМ ТУ САМУЮ КНОПКУ НАСТРОЕК
+        tg.SettingsButton.show();
+        tg.SettingsButton.onClick(() => {
+            tg.HapticFeedback.impactOccurred('heavy');
+            // Здесь мы будем открывать меню "Новый сторис"
+            tg.showPopup({
+                title: 'Создать',
+                message: 'Что вы хотите опубликовать сегодня?',
+                buttons: [
+                    {id: 'story', type: 'default', text: 'Новый сторис'},
+                    {id: 'post', type: 'default', text: 'Новый пост'},
+                    {type: 'cancel', text: 'Отмена'}
+                ]
+            }, (buttonId) => {
+                if(buttonId === 'story') alert('Запуск камеры...');
+            });
+        });
 
-        // 2. Рендер карточек
-        const feedBox = document.getElementById('feed');
-        for(let i=0; i<5; i++) {
-            feedBox.innerHTML += `
-                <div class="modern-card">
-                    <div class="card-media"></div>
-                    <div class="card-glass-bottom">
-                        <div class="card-author">
-                            <span class="author-title">Digital Art Concept</span>
-                            <span class="author-sub">Создано @ai_designer</span>
-                        </div>
-                        <div class="card-actions-row">
-                            <div class="btn-circle" onclick="tg.HapticFeedback.impactOccurred('medium')">
-                                <img src="https://cdn-icons-png.flaticon.com/512/1077/1077035.png">
-                            </div>
-                            <div class="btn-circle share-btn" onclick="tg.HapticFeedback.impactOccurred('light')">
-                                <img src="https://cdn-icons-png.flaticon.com/512/2550/2550240.png">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        // 3. Логика пластилинового таббара
-        let currentIdx = 0;
         const blob = document.getElementById('blob');
+        const items = document.querySelectorAll('.nav-item');
+        let currentIndex = -1;
 
-        function moveBlob(index, el) {
-            if (index === currentIdx) return;
-
-            // Удаляем активные классы
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        function move(index) {
+            const targetItem = document.getElementById(`tab-${index}`);
             
-            // Расчет позиции
-            const step = 82; // Расстояние между центрами табов
-            const newLeft = 14 + (index * step);
-            
-            // Эффект растяжения
-            if (index > currentIdx) {
-                blob.classList.add('stretch-r');
-            } else {
-                blob.classList.add('stretch-l');
+            if (index === currentIndex) {
+                // Микро-деформация при повторном нажатии
+                const r = () => Math.floor(Math.random() * 8 + 46); 
+                blob.style.borderRadius = `${r()}% ${100-r()}% ${r()}% ${100-r()}% / ${100-r()}% ${r()}% ${100-r()}% ${r()}%`;
+                blob.style.transform = `scale(1.04)`;
+                
+                setTimeout(() => {
+                    blob.style.borderRadius = ''; 
+                    blob.style.transform = '';
+                }, 200);
+                
+                tg.HapticFeedback.notificationOccurred('success');
+                return;
             }
 
-            blob.style.left = `${newLeft}px`;
-            
-            setTimeout(() => {
-                blob.classList.remove('stretch-r', 'stretch-l');
-                el.classList.add('active');
-            }, 300);
+            items.forEach(item => item.classList.remove('active'));
+            blob.classList.remove('stretch-right', 'stretch-left');
 
-            currentIdx = index;
-            tg.HapticFeedback.impactOccurred('medium');
+            if (currentIndex !== -1) {
+                if (index > currentIndex) blob.classList.add('stretch-right');
+                else blob.classList.add('stretch-left');
+            }
+
+            const targetX = targetItem.offsetLeft + (targetItem.offsetWidth / 2) - (blob.offsetWidth / 2);
+            blob.style.left = `${targetX}px`;
+            
+            targetItem.classList.add('active');
+            currentIndex = index;
+
+            // Завершение деформации еще чуть раньше (180ms)
+            setTimeout(() => {
+                blob.classList.remove('stretch-right', 'stretch-left');
+            }, 180);
+
+            if (currentIndex !== -1) tg.HapticFeedback.impactOccurred('medium');
         }
 
-        // Инициализация цветов темы
-        document.documentElement.style.setProperty('--tg-accent', tg.themeParams.button_color || '#007AFF');
+        const lang = tg.initDataUnsafe.user?.language_code || 'en';
+        const t = { ru: "ДЛЯ ТЕБЯ", zh: "为你推荐", en: "FOR YOU" };
+        document.getElementById('title').innerText = t[lang] || t.en;
+
+        if (tg.initDataUnsafe.user?.photo_url) {
+            document.getElementById('pfp').style.backgroundImage = `url(${tg.initDataUnsafe.user.photo_url})`;
+        }
+
+        window.onload = () => {
+            setTimeout(() => move(0), 50);
+        };
     </script>
 </body>
 </html>
