@@ -8,7 +8,7 @@
             --tg-bg: var(--tg-theme-bg-color, #000000);
             --tg-accent: var(--tg-theme-button-color, #007AFF);
             --tg-text: var(--tg-theme-text-color, #ffffff);
-            --nav-bg: rgba(255, 255, 255, 0.08);
+            --nav-bg: rgba(255, 255, 255, 0.1);
         }
 
         body {
@@ -41,7 +41,7 @@
         .nav-island {
             position: relative;
             width: 220px;
-            height: 54px;
+            height: 56px;
             background: var(--nav-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
@@ -49,51 +49,54 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 10px; /* Симметричные отступы */
+            padding: 0 10px;
             border: 1px solid rgba(255,255,255,0.05);
         }
 
-        /* Пластилиновый круг */
+        /* Тот самый блоб */
         .blob {
             position: absolute;
-            width: 42px;
-            height: 42px;
+            width: 44px;
+            height: 44px;
             background: var(--tg-accent);
             border-radius: 50%;
             z-index: 0;
-            left: 10px; /* Начальная позиция */
-            transition: left 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+            /* Плавное перемещение */
+            transition: left 0.5s cubic-bezier(0.19, 1, 0.22, 1), 
+                        border-radius 0.4s ease, 
+                        transform 0.4s ease;
         }
 
-        /* Анимация "пластилина" во время движения */
-        @keyframes liquid-stretch {
-            0% { border-radius: 50%; transform: scaleX(1); }
-            45% { border-radius: 35% 65% 65% 35% / 50% 50% 50% 50%; transform: scaleX(1.25); }
-            100% { border-radius: 50%; transform: scaleX(1); }
+        /* Деформация вправо */
+        .stretch-right {
+            border-radius: 40% 65% 65% 40% / 50% 50% 50% 50%;
+            transform: scaleX(1.2);
         }
 
-        .blob.animate {
-            animation: liquid-stretch 0.5s ease-in-out;
+        /* Деформация влево */
+        .stretch-left {
+            border-radius: 65% 40% 40% 65% / 50% 50% 50% 50%;
+            transform: scaleX(1.2);
         }
 
         .nav-item {
-            flex: 1; /* Равное распределение пространства */
+            position: relative;
+            width: 60px;
             height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
             z-index: 2;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
         }
 
         .nav-item img {
-            width: 22px;
-            height: 22px;
+            width: 24px;
+            height: 24px;
             filter: invert(1);
             opacity: 0.3;
-            transition: opacity 0.3s;
+            transition: opacity 0.3s ease;
         }
 
         .nav-item.active img {
@@ -101,8 +104,8 @@
         }
 
         .avatar {
-            width: 26px;
-            height: 26px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             background-color: #333;
             background-size: cover;
@@ -115,16 +118,12 @@
             opacity: 1;
         }
 
-        .story-placeholder {
+        .content-area {
             flex: 1;
             margin: 10px 20px 100px;
             background: linear-gradient(180deg, #111, #000);
             border-radius: 40px;
             border: 1px solid rgba(255,255,255,0.05);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: rgba(255,255,255,0.1);
         }
     </style>
 </head>
@@ -132,23 +131,21 @@
 
     <div class="header" id="title">FOR YOU</div>
 
-    <div class="story-placeholder">
-        <span>Story View</span>
-    </div>
+    <div class="content-area"></div>
 
     <div class="nav-wrapper">
         <div class="nav-island">
             <div class="blob" id="blob"></div>
             
-            <div class="nav-item active" onclick="move(this, 0)">
+            <div class="nav-item active" id="tab-0" onclick="move(0)">
                 <img src="https://cdn-icons-png.flaticon.com/512/6997/6997164.png" alt="home">
             </div>
             
-            <div class="nav-item" onclick="move(this, 1)">
+            <div class="nav-item" id="tab-1" onclick="move(1)">
                 <img src="https://cdn-icons-png.flaticon.com/512/8025/8025278.png" alt="search">
             </div>
             
-            <div class="nav-item" onclick="move(this, 2)">
+            <div class="nav-item" id="tab-2" onclick="move(2)">
                 <div class="avatar" id="pfp"></div>
             </div>
         </div>
@@ -161,31 +158,39 @@
 
         const blob = document.getElementById('blob');
         const items = document.querySelectorAll('.nav-item');
+        let currentIndex = 0;
 
-        function move(el, index) {
+        function move(index) {
+            const targetItem = document.getElementById(`tab-${index}`);
+            
+            // Убираем старые классы
             items.forEach(item => item.classList.remove('active'));
-            el.classList.add('active');
+            blob.classList.remove('stretch-right', 'stretch-left');
 
-            // Точный расчет центрирования
-            const islandWidth = 220;
-            const padding = 10;
-            const blobWidth = 42;
-            const availableSpace = islandWidth - (padding * 2);
-            const sectionWidth = availableSpace / 3;
-            
-            // Центр иконки минус половина ширины блоба плюс начальный паддинг
-            const xPos = padding + (index * sectionWidth) + (sectionWidth / 2) - (blobWidth / 2);
+            // Определяем направление деформации
+            if (index > currentIndex) {
+                blob.classList.add('stretch-right');
+            } else if (index < currentIndex) {
+                blob.classList.add('stretch-left');
+            }
 
-            // Сброс и запуск анимации
-            blob.classList.remove('animate');
-            void blob.offsetWidth; // Магия для рестарта CSS анимации
-            blob.classList.add('animate');
+            // Перемещаем блоб точно в центр иконки
+            // Вычисляем позицию: offsetLeft иконки + (ширина иконки/2) - (ширина блоба/2)
+            const targetX = targetItem.offsetLeft + (targetItem.offsetWidth / 2) - (blob.offsetWidth / 2);
+            blob.style.left = `${targetX}px`;
             
-            blob.style.left = `${xPos}px`;
+            targetItem.classList.add('active');
+            currentIndex = index;
+
+            // Возвращаем форму круга плавно к концу анимации
+            setTimeout(() => {
+                blob.classList.remove('stretch-right', 'stretch-left');
+            }, 350);
 
             tg.HapticFeedback.impactOccurred('light');
         }
 
+        // Локализация
         const lang = tg.initDataUnsafe.user?.language_code || 'en';
         const t = { ru: "ДЛЯ ТЕБЯ", zh: "为你推荐", en: "FOR YOU" };
         document.getElementById('title').innerText = t[lang] || t.en;
@@ -193,6 +198,9 @@
         if (tg.initDataUnsafe.user?.photo_url) {
             document.getElementById('pfp').style.backgroundImage = `url(${tg.initDataUnsafe.user.photo_url})`;
         }
+
+        // Инициализация позиции
+        window.onload = () => move(0);
     </script>
 </body>
 </html>
