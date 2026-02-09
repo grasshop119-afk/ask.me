@@ -25,8 +25,15 @@
             overflow: hidden;
         }
 
-        .header {
+        /* Контейнер заголовка с учетом системных кнопок */
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             padding: calc(var(--safe-top) + var(--tg-safe-h)) 25px 10px;
+        }
+
+        .header {
             font-size: 34px;
             font-weight: 900;
             letter-spacing: -1.5px;
@@ -43,8 +50,7 @@
 
         .nav-island {
             position: relative;
-            /* Увеличили ширину под 4 иконки */
-            width: 280px; 
+            width: 240px;
             height: 60px;
             background: var(--nav-bg);
             backdrop-filter: blur(25px);
@@ -53,7 +59,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 12px;
+            padding: 0 15px;
             border: 1px solid rgba(255,255,255,0.08);
         }
 
@@ -66,20 +72,21 @@
             z-index: 0;
             top: 50%;
             margin-top: -23px;
-            left: 12px;
+            left: 15px;
             transition: left 0.5s cubic-bezier(0.19, 1, 0.22, 1), 
                         border-radius 0.3s ease, 
                         transform 0.3s ease;
         }
 
+        /* Деформация при движении (важно: !important чтобы перебивать инлайновые стили) */
         .stretch-right {
             border-radius: 40% 70% 70% 40% / 50% 50% 50% 50% !important;
-            transform: scaleX(1.2);
+            transform: scaleX(1.18) !important;
         }
 
         .stretch-left {
             border-radius: 70% 40% 40% 70% / 50% 50% 50% 50% !important;
-            transform: scaleX(1.2);
+            transform: scaleX(1.18) !important;
         }
 
         .nav-item {
@@ -95,16 +102,14 @@
         }
 
         .nav-item img {
-            width: 24px;
-            height: 24px;
+            width: 26px;
+            height: 26px;
             filter: invert(1);
             opacity: 0.3;
             transition: opacity 0.3s ease;
         }
 
-        .nav-item.active img {
-            opacity: 1;
-        }
+        .nav-item.active img { opacity: 1; }
 
         .avatar {
             width: 28px;
@@ -116,19 +121,14 @@
             opacity: 0.4;
         }
 
-        .active .avatar {
-            opacity: 1;
-        }
-
-        /* Оранжевый акцент для иконки сторис, если нужно выделить */
-        .story-btn img {
-            /* filter: none; если захочешь цветную иконку */
-        }
+        .active .avatar { opacity: 1; }
     </style>
 </head>
 <body>
 
-    <div class="header" id="title">ДЛЯ ТЕБЯ</div>
+    <div class="header-container">
+        <div class="header" id="title">ДЛЯ ТЕБЯ</div>
+    </div>
 
     <div class="nav-wrapper">
         <div class="nav-island">
@@ -141,12 +141,8 @@
             <div class="nav-item" id="tab-1" onclick="move(1)">
                 <img src="https://cdn-icons-png.flaticon.com/512/8025/8025278.png" alt="search">
             </div>
-
-            <div class="nav-item story-btn" id="tab-2" onclick="createStory(2)">
-                <img src="https://cdn-icons-png.flaticon.com/512/10464/10464654.png" alt="story">
-            </div>
             
-            <div class="nav-item" id="tab-3" onclick="move(3)">
+            <div class="nav-item" id="tab-2" onclick="move(2)">
                 <div class="avatar" id="pfp"></div>
             </div>
         </div>
@@ -159,41 +155,41 @@
         tg.expand();
         if (tg.requestFullscreen) tg.requestFullscreen();
 
+        // ВКЛЮЧАЕМ ТУ САМУЮ КНОПКУ НАСТРОЕК
+        tg.SettingsButton.show();
+        tg.SettingsButton.onClick(() => {
+            tg.HapticFeedback.impactOccurred('heavy');
+            // Здесь мы будем открывать меню "Новый сторис"
+            tg.showPopup({
+                title: 'Создать',
+                message: 'Что вы хотите опубликовать сегодня?',
+                buttons: [
+                    {id: 'story', type: 'default', text: 'Новый сторис'},
+                    {id: 'post', type: 'default', text: 'Новый пост'},
+                    {type: 'cancel', text: 'Отмена'}
+                ]
+            }, (buttonId) => {
+                if(buttonId === 'story') alert('Запуск камеры...');
+            });
+        });
+
         const blob = document.getElementById('blob');
         const items = document.querySelectorAll('.nav-item');
         let currentIndex = -1;
-
-        // Специальная функция для сторис
-        function createStory(index) {
-            // Сначала двигаем анимацию
-            move(index);
-            
-            // Через небольшую паузу вызываем нативный функционал TG
-            setTimeout(() => {
-                if (tg.shareToStory) {
-                    // Здесь можно передать URL картинки или оставить пустым для выбора из галереи
-                    tg.shareToStory("https://example.com/your-media.jpg", {
-                        text: "Check out my new app!",
-                        widget_link: { url: "https://t.me/your_bot" }
-                    });
-                } else {
-                    console.log("Stories API not supported or testing in browser");
-                }
-            }, 300);
-        }
 
         function move(index) {
             const targetItem = document.getElementById(`tab-${index}`);
             
             if (index === currentIndex) {
-                const r = () => Math.floor(Math.random() * 10 + 45); 
+                // Микро-деформация при повторном нажатии
+                const r = () => Math.floor(Math.random() * 8 + 46); 
                 blob.style.borderRadius = `${r()}% ${100-r()}% ${r()}% ${100-r()}% / ${100-r()}% ${r()}% ${100-r()}% ${r()}%`;
-                blob.style.transform = `scale(1.05)`;
+                blob.style.transform = `scale(1.04)`;
                 
                 setTimeout(() => {
                     blob.style.borderRadius = ''; 
                     blob.style.transform = '';
-                }, 250);
+                }, 200);
                 
                 tg.HapticFeedback.notificationOccurred('success');
                 return;
@@ -213,17 +209,20 @@
             targetItem.classList.add('active');
             currentIndex = index;
 
+            // Завершение деформации еще чуть раньше (180ms)
             setTimeout(() => {
                 blob.classList.remove('stretch-right', 'stretch-left');
-            }, 200);
+            }, 180);
 
             if (currentIndex !== -1) tg.HapticFeedback.impactOccurred('medium');
         }
 
-        // Локализация и аватар
-        const user = tg.initDataUnsafe.user;
-        if (user?.photo_url) {
-            document.getElementById('pfp').style.backgroundImage = `url(${user.photo_url})`;
+        const lang = tg.initDataUnsafe.user?.language_code || 'en';
+        const t = { ru: "ДЛЯ ТЕБЯ", zh: "为你推荐", en: "FOR YOU" };
+        document.getElementById('title').innerText = t[lang] || t.en;
+
+        if (tg.initDataUnsafe.user?.photo_url) {
+            document.getElementById('pfp').style.backgroundImage = `url(${tg.initDataUnsafe.user.photo_url})`;
         }
 
         window.onload = () => {
