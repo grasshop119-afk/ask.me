@@ -61,22 +61,35 @@
             background: var(--tg-accent);
             border-radius: 50%;
             z-index: 0;
-            /* Плавное перемещение */
+            left: 10px;
             transition: left 0.5s cubic-bezier(0.19, 1, 0.22, 1), 
-                        border-radius 0.4s ease, 
-                        transform 0.4s ease;
+                        border-radius 0.3s ease, 
+                        transform 0.3s ease;
         }
 
-        /* Деформация вправо */
+        /* Направленная деформация */
         .stretch-right {
-            border-radius: 40% 65% 65% 40% / 50% 50% 50% 50%;
-            transform: scaleX(1.2);
+            border-radius: 40% 70% 70% 40% / 50% 50% 50% 50%;
+            transform: scaleX(1.25);
         }
 
-        /* Деформация влево */
         .stretch-left {
-            border-radius: 65% 40% 40% 65% / 50% 50% 50% 50%;
-            transform: scaleX(1.2);
+            border-radius: 70% 40% 40% 70% / 50% 50% 50% 50%;
+            transform: scaleX(1.25);
+        }
+
+        /* Анимация "Кляксы" при нажатии на ту же вкладку */
+        @keyframes blob-splash {
+            0% { border-radius: 50%; transform: scale(1); }
+            50% { 
+                border-radius: 30% 70% 50% 50% / 50% 30% 70% 50%; 
+                transform: scale(1.15) rotate(5deg);
+            }
+            100% { border-radius: 50%; transform: scale(1); }
+        }
+
+        .splash {
+            animation: blob-splash 0.4s ease-in-out;
         }
 
         .nav-item {
@@ -163,31 +176,37 @@
         function move(index) {
             const targetItem = document.getElementById(`tab-${index}`);
             
-            // Убираем старые классы
-            items.forEach(item => item.classList.remove('active'));
-            blob.classList.remove('stretch-right', 'stretch-left');
+            // Если нажали на ту же самую вкладку
+            if (index === currentIndex) {
+                blob.classList.remove('splash');
+                void blob.offsetWidth; // Рестарт анимации
+                blob.classList.add('splash');
+                tg.HapticFeedback.notificationOccurred('success'); // Легкая вибрация успеха
+                return;
+            }
 
-            // Определяем направление деформации
+            // Обычное движение
+            items.forEach(item => item.classList.remove('active'));
+            blob.classList.remove('stretch-right', 'stretch-left', 'splash');
+
             if (index > currentIndex) {
                 blob.classList.add('stretch-right');
-            } else if (index < currentIndex) {
+            } else {
                 blob.classList.add('stretch-left');
             }
 
-            // Перемещаем блоб точно в центр иконки
-            // Вычисляем позицию: offsetLeft иконки + (ширина иконки/2) - (ширина блоба/2)
             const targetX = targetItem.offsetLeft + (targetItem.offsetWidth / 2) - (blob.offsetWidth / 2);
             blob.style.left = `${targetX}px`;
             
             targetItem.classList.add('active');
             currentIndex = index;
 
-            // Возвращаем форму круга плавно к концу анимации
+            // Возвращаем форму круга ЧУТЬ РАНЬШЕ (250ms вместо 350ms)
             setTimeout(() => {
                 blob.classList.remove('stretch-right', 'stretch-left');
-            }, 350);
+            }, 250);
 
-            tg.HapticFeedback.impactOccurred('light');
+            tg.HapticFeedback.impactOccurred('medium');
         }
 
         // Локализация
