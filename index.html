@@ -5,226 +5,248 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <style>
         :root {
-            --tg-bg: var(--tg-theme-bg-color, #000000);
-            --tg-accent: var(--tg-theme-button-color, #007AFF);
-            --tg-secondary: var(--tg-theme-secondary-bg-color, #1c1c1d);
-            --tg-text: var(--tg-theme-text-color, #ffffff);
+            --tg-bg: #000000;
+            --tg-accent: #248bf5;
+            --tg-accent-gradient: linear-gradient(135deg, #248bf5 0%, #a336ff 100%);
+            --card-bg: rgba(28, 28, 30, 0.6);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.12);
             --safe-top: env(safe-area-inset-top, 0px);
             --safe-bottom: env(safe-area-inset-bottom, 0px);
-            --header-h: 120px;
         }
 
         body {
             margin: 0;
             background-color: var(--tg-bg);
-            color: var(--tg-text);
-            font-family: -apple-system, system-ui, sans-serif;
+            color: white;
+            font-family: 'SF Pro Display', -apple-system, system-ui, sans-serif;
             overflow: hidden;
-            touch-action: none; /* Контролируем свайпы сами */
+            height: 100vh;
         }
 
-        /* --- PULL TO REFRESH LAYER --- */
-        #ptr-indicator {
-            position: absolute;
-            top: calc(var(--safe-top) + 20px);
-            left: 50%;
-            transform: translateX(-50%) translateY(-50px);
-            transition: transform 0.2s cubic-bezier(0,0,0.2,1);
-            z-index: 5;
-        }
-
-        /* --- FIXED DYNAMIC HEADER --- */
-        .header-fixed {
+        /* --- HEADER & TOP NAVIGATION --- */
+        .app-header {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            z-index: 1000;
-            background: var(--tg-bg);
-            padding: calc(var(--safe-top) + 40px) 25px 20px;
-            transition: transform 0.1s linear;
+            z-index: 100;
+            padding-top: calc(var(--safe-top) + 60px); /* Место под кнопки TG */
+            padding-left: 20px;
+            padding-bottom: 20px;
+            background: linear-gradient(to bottom, black 60%, transparent);
         }
 
-        .header-fixed h1 {
-            margin: 0;
-            font-size: 38px;
-            font-weight: 900;
-            letter-spacing: -2px;
-            transform-origin: left center;
+        .app-title {
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: var(--tg-accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        /* --- STORIES: THE BUBBLE TRACK --- */
-        .stories-track {
-            padding: 10px 0 25px 20px;
+        /* --- STORIES (CAPSULES) --- */
+        .stories-container {
+            padding: 0 20px 25px;
             display: flex;
-            gap: 18px;
+            gap: 14px;
             overflow-x: auto;
             scrollbar-width: none;
-            background: var(--tg-bg);
         }
-        .stories-track::-webkit-scrollbar { display: none; }
+        .stories-container::-webkit-scrollbar { display: none; }
 
-        .bubble {
+        .story-capsule {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            min-width: 72px;
+        }
+
+        .story-ring {
+            width: 68px;
+            height: 68px;
+            border-radius: 26px;
+            padding: 2px;
+            background: var(--tg-accent-gradient);
             position: relative;
-            min-width: 65px;
-            text-align: center;
         }
 
-        .bubble-frame {
-            width: 65px;
-            height: 65px;
+        .story-ring.watched {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .story-ring img {
+            width: 100%;
+            height: 100%;
             border-radius: 24px;
-            background: var(--tg-secondary);
-            border: 1.5px solid rgba(255,255,255,0.1);
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            object-fit: cover;
+            border: 3px solid black;
         }
 
-        .bubble:active .bubble-frame { transform: scale(0.9); }
-
-        /* Метка Online — чисто механика ТГ */
-        .online-badge {
-            position: absolute;
-            bottom: -2px;
-            right: -2px;
-            width: 14px;
-            height: 14px;
-            background: #31d158;
-            border: 3px solid var(--tg-bg);
-            border-radius: 50%;
-            z-index: 10;
-        }
-
-        /* --- THE STACK CONTENT (MAIN FEED) --- */
-        #scroll-container {
+        /* --- MAIN FEED (3D LAYERS) --- */
+        .main-scroll {
             height: 100vh;
             overflow-y: scroll;
-            padding-top: calc(var(--header-h) + var(--safe-top) + 110px);
-            padding-bottom: 200px;
-            transition: transform 0.1s linear;
+            padding-top: 240px; /* Отступ чтобы сторис не заезжали под шапку */
+            padding-bottom: 150px;
+            -webkit-overflow-scrolling: touch;
         }
 
-        .stack-tile {
-            margin: 0 16px 25px;
-            background: var(--tg-secondary);
-            border-radius: 30px;
+        .post-card {
+            margin: 0 16px 24px;
             position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 40px;
+            background: var(--card-bg);
+            border: var(--glass-border);
             overflow: hidden;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        .tile-media {
+        .media-container {
             width: 100%;
-            min-height: 300px;
-            max-height: 500px;
-            object-fit: cover;
-            display: block;
+            aspect-ratio: 1 / 1.2;
+            position: relative;
         }
 
-        .tile-glass {
-            padding: 20px;
-            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+        .media-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .overlay-glass {
             position: absolute;
             bottom: 0;
-            width: 100%;
-            box-sizing: border-box;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
             display: flex;
             justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        /* --- ACTION BUTTONS (CLEAN) --- */
+        .side-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
             align-items: center;
         }
 
-        .tile-actions {
+        .btn-glass {
+            width: 44px;
+            height: 44px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
             display: flex;
-            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            border: var(--glass-border);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .tile-btn {
-            background: none;
-            border: none;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
+        .btn-glass:active { transform: scale(0.9); }
 
-        .tile-btn img {
-            width: 26px;
-            height: 26px;
+        .btn-glass img {
+            width: 22px;
+            height: 22px;
             filter: invert(1);
         }
 
-        /* --- NAVIGATION (PLASTICINE RESTORED) --- */
+        /* --- NAV ISLAND (RESTORED & IMPROVED) --- */
         .nav-wrapper {
             position: fixed;
-            bottom: calc(30px + var(--safe-bottom));
+            bottom: calc(35px + var(--safe-bottom));
             left: 50%;
             transform: translateX(-50%);
-            z-index: 2000;
+            z-index: 1000;
         }
 
         .nav-island {
-            width: 240px;
-            height: 60px;
-            background: rgba(28, 28, 30, 0.85);
+            width: 260px;
+            height: 70px;
+            background: rgba(20, 20, 22, 0.85);
             backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 30px;
+            border-radius: 35px;
+            border: var(--glass-border);
             display: flex;
-            justify-content: space-between;
+            justify-content: space-around;
             align-items: center;
-            padding: 0 15px;
-            border: 1px solid rgba(255,255,255,0.1);
-            position: relative;
+            padding: 0 10px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
         }
 
         .blob {
             position: absolute;
-            width: 46px;
-            height: 46px;
-            background: var(--tg-accent);
-            border-radius: 50%;
-            left: 15px;
-            transition: left 0.5s cubic-bezier(0.19, 1, 0.22, 1), border-radius 0.3s ease;
+            width: 54px;
+            height: 54px;
+            background: var(--tg-accent-gradient);
+            border-radius: 22px;
+            z-index: 0;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            box-shadow: 0 0 15px rgba(36, 139, 245, 0.4);
         }
 
-        .nav-item { width: 50px; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 2; }
-        .nav-item img, .profile-pfp { width: 26px; height: 26px; filter: invert(1); opacity: 0.3; transition: 0.3s; }
-        .nav-item.active img, .nav-item.active .profile-pfp { opacity: 1; }
-        .profile-pfp { border-radius: 50%; border: 1px solid #fff; }
+        .nav-item {
+            position: relative;
+            z-index: 1;
+            width: 60px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-        .stretch-right { border-radius: 40% 70% 70% 40% / 50% 50% 50% 50% !important; transform: scaleX(1.18); }
-        .stretch-left { border-radius: 70% 40% 40% 70% / 50% 50% 50% 50% !important; transform: scaleX(1.18); }
+        .nav-item img {
+            width: 26px;
+            height: 26px;
+            filter: invert(1);
+            opacity: 0.4;
+            transition: 0.3s;
+        }
+
+        .nav-item.active img { opacity: 1; }
+
+        .pfp-nav {
+            width: 30px;
+            height: 30px;
+            border-radius: 10px;
+            background: #333;
+            background-size: cover;
+            border: 2px solid transparent;
+        }
+        .active .pfp-nav { border-color: white; }
 
     </style>
 </head>
 <body>
 
-    <div id="ptr-indicator">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--tg-accent)" stroke-width="3" stroke-linecap="round">
-            <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
-        </svg>
-    </div>
-
-    <div class="header-fixed" id="header">
-        <h1 id="header-text">ДЛЯ ТЕБЯ</h1>
-        <div class="stories-track" id="stories">
-            <div class="bubble">
-                <div class="bubble-frame"><div id="my-avatar" style="width:100%;height:100%;background-size:cover;"></div></div>
-                <div style="font-size:10px; margin-top:5px; font-weight:700;">Вы</div>
+    <div class="app-header">
+        <div class="app-title">ДЛЯ ТЕБЯ</div>
+        <div class="stories-container" id="stories">
             </div>
-        </div>
     </div>
 
-    <div id="scroll-container">
-        <div id="feed-stack"></div>
-    </div>
+    <div class="main-scroll" id="mainScroll">
+        </div>
 
     <div class="nav-wrapper">
         <div class="nav-island">
             <div class="blob" id="blob"></div>
-            <div class="nav-item active" onclick="move(0, this)"><img src="https://cdn-icons-png.flaticon.com/512/6997/6997164.png"></div>
-            <div class="nav-item" onclick="move(1, this)"><img src="https://cdn-icons-png.flaticon.com/512/8025/8025278.png"></div>
-            <div class="nav-item" onclick="move(2, this)"><div class="profile-pfp" id="nav-pfp"></div></div>
+            <div class="nav-item active" onclick="navTo(0, this)">
+                <img src="https://cdn-icons-png.flaticon.com/512/6997/6997164.png">
+            </div>
+            <div class="nav-item" onclick="navTo(1, this)">
+                <img src="https://cdn-icons-png.flaticon.com/512/8025/8025278.png">
+            </div>
+            <div class="nav-item" onclick="navTo(2, this)">
+                <div class="pfp-nav" id="navPfp"></div>
+            </div>
         </div>
     </div>
 
@@ -234,104 +256,81 @@
         tg.ready();
         tg.expand();
 
-        // --- ДИНАМИКА PULL-TO-REFRESH ---
-        const container = document.getElementById('scroll-container');
-        const headerText = document.getElementById('header-text');
-        const ptr = document.getElementById('ptr-indicator');
-        let startY = 0;
-
-        container.addEventListener('touchstart', e => {
-            if (container.scrollTop === 0) startY = e.touches[0].pageY;
-        });
-
-        container.addEventListener('touchmove', e => {
-            const y = e.touches[0].pageY;
-            const dist = y - startY;
-            if (container.scrollTop === 0 && dist > 0) {
-                const move = Math.pow(dist, 0.8);
-                container.style.transform = `translateY(${move}px)`;
-                headerText.style.transform = `scale(${1 + move/500})`;
-                ptr.style.transform = `translateX(-50%) translateY(${move - 50}px) rotate(${move*2}deg)`;
-                if (move > 70) tg.HapticFeedback.impactOccurred('light');
-            }
-        });
-
-        container.addEventListener('touchend', () => {
-            container.style.transform = '';
-            headerText.style.transform = '';
-            ptr.style.transform = 'translateX(-50%) translateY(-50px)';
-            if (parseInt(container.style.transform.replace(/[^\d.]/g, '')) > 60) {
-                tg.HapticFeedback.notificationOccurred('success');
-            }
-        });
-
-        // --- ГЕНЕРАЦИЯ СТЕКА (НЕ ИНСТА) ---
-        const feedStack = document.getElementById('feed-stack');
-        const samples = [
-            "https://images.unsplash.com/photo-1614850523296-d8c1af93d400?w=800",
-            "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=800",
-            "https://images.unsplash.com/photo-1579546128127-b456567ec430?w=800"
+        // 1. Настройка контента (Креативный подход)
+        const mockStories = [
+            { id: 1, img: 'https://i.pravatar.cc/150?u=1' },
+            { id: 2, img: 'https://i.pravatar.cc/150?u=2' },
+            { id: 3, img: 'https://i.pravatar.cc/150?u=3' },
+            { id: 4, img: 'https://i.pravatar.cc/150?u=4' },
+            { id: 5, img: 'https://i.pravatar.cc/150?u=5' }
         ];
 
-        samples.forEach((img, i) => {
-            feedStack.innerHTML += `
-                <div class="stack-tile">
-                    <img src="${img}" class="tile-media">
-                    <div class="tile-glass">
-                        <div style="font-weight:800; font-size:18px;">Abstract Flow #${i+1}</div>
-                        <div class="tile-actions">
-                            <button class="tile-btn" onclick="like(this)"><img src="https://cdn-icons-png.flaticon.com/512/7754/7754213.png"></button>
-                            <button class="tile-btn"><img src="https://cdn-icons-png.flaticon.com/512/2550/2550240.png"></button>
+        const mockPosts = [
+            { user: 'Alex Red', likes: '12K', img: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800' },
+            { user: 'Inspo Lab', likes: '8.4K', img: 'https://images.unsplash.com/photo-1633167606207-d840b5070fc2?w=800' }
+        ];
+
+        // Рендер сторис
+        const storiesTitle = `<div class="story-capsule"><div class="story-ring"><img src="${tg.initDataUnsafe.user?.photo_url || 'https://i.pravatar.cc/100'}"></div><span style="font-size:10px; opacity:0.6">Вы</span></div>`;
+        document.getElementById('stories').innerHTML = storiesTitle + mockStories.map(s => `
+            <div class="story-capsule">
+                <div class="story-ring ${s.id > 3 ? 'watched' : ''}">
+                    <img src="${s.img}">
+                </div>
+                <span style="font-size:10px; opacity:0.6">User ${s.id}</span>
+            </div>
+        `).join('');
+
+        // Рендер ленты
+        document.getElementById('mainScroll').innerHTML = mockPosts.map(p => `
+            <div class="post-card">
+                <div class="media-container">
+                    <img src="${p.img}" loading="lazy">
+                    <div class="overlay-glass">
+                        <div>
+                            <div style="font-weight:700; font-size:18px; margin-bottom:4px;">${p.user}</div>
+                            <div style="font-size:13px; opacity:0.7;">Digital Artifact #024</div>
+                        </div>
+                        <div class="side-actions">
+                            <div class="btn-glass" onclick="haptic('heavy')">
+                                <img src="https://cdn-icons-png.flaticon.com/512/7754/7754213.png">
+                            </div>
+                            <div class="btn-glass" onclick="haptic('medium')">
+                                <img src="https://cdn-icons-png.flaticon.com/512/6997/6997415.png">
+                            </div>
+                            <div class="btn-glass" style="background:var(--tg-accent-gradient); border:none;" onclick="haptic('light')">
+                                <img src="https://cdn-icons-png.flaticon.com/512/2550/2550240.png">
+                            </div>
                         </div>
                     </div>
                 </div>
-            `;
-        });
+            </div>
+        `).join('');
 
-        // --- TG SYNC ---
-        const stories = document.getElementById('stories');
-        for(let i=0; i<8; i++) {
-            stories.innerHTML += `
-                <div class="bubble">
-                    <div class="bubble-frame"><img src="https://i.pravatar.cc/100?u=${i}" style="width:100%"></div>
-                    ${i % 3 === 0 ? '<div class="online-badge"></div>' : ''}
-                    <div style="font-size:10px; margin-top:5px; opacity:0.6;">User ${i}</div>
-                </div>
-            `;
-        }
-
-        const user = tg.initDataUnsafe.user;
-        if (user?.photo_url) {
-            document.getElementById('my-avatar').style.backgroundImage = `url(${user.photo_url})`;
-            document.getElementById('nav-pfp').style.backgroundImage = `url(${user.photo_url})`;
-        }
-
-        // --- КУЛЬТОВЫЙ ТАББАР ---
+        // 2. Навигация (Blob logic)
         const blob = document.getElementById('blob');
-        let currentIdx = 0;
-
-        function move(index, el) {
-            if (index === currentIdx) {
-                tg.HapticFeedback.notificationOccurred('success');
-                return;
-            }
+        function navTo(index, el) {
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
             el.classList.add('active');
             
-            blob.classList.remove('stretch-right', 'stretch-left');
-            blob.classList.add(index > currentIdx ? 'stretch-right' : 'stretch-left');
+            const x = el.offsetLeft + (el.offsetWidth / 2) - (blob.offsetWidth / 2);
+            blob.style.left = `${x}px`;
             
-            blob.style.left = `${el.offsetLeft + (el.offsetWidth/2) - 23}px`;
-            currentIdx = index;
-            
-            setTimeout(() => blob.classList.remove('stretch-right', 'stretch-left'), 300);
             tg.HapticFeedback.impactOccurred('medium');
         }
 
-        function like(el) {
-            tg.HapticFeedback.impactOccurred('heavy');
-            el.style.filter = "drop-shadow(0 0 10px var(--tg-accent))";
+        function haptic(style) {
+            tg.HapticFeedback.impactOccurred(style);
         }
+
+        // Синхронизация аватара
+        if (tg.initDataUnsafe.user?.photo_url) {
+            document.getElementById('navPfp').style.backgroundImage = `url(${tg.initDataUnsafe.user.photo_url})`;
+        }
+
+        // Инициализация позиции блоба
+        window.onload = () => navTo(0, document.querySelector('.nav-item'));
+
     </script>
 </body>
 </html>
