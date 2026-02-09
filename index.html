@@ -3,249 +3,399 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Telegram Premium Feed</title>
     <style>
         :root {
-            --tg-bg: #000000;
-            --tg-accent: #248bf5;
-            --tg-accent-gradient: linear-gradient(135deg, #248bf5 0%, #a336ff 100%);
-            --card-bg: rgba(28, 28, 30, 0.6);
-            --glass-border: 1px solid rgba(255, 255, 255, 0.12);
+            --tg-bg: var(--tg-theme-bg-color, #000000);
+            --tg-accent: var(--tg-theme-button-color, #007AFF);
+            --tg-secondary: var(--tg-theme-secondary-bg-color, #1c1c1d);
+            --tg-text: var(--tg-theme-text-color, #ffffff);
+            --tg-hint: var(--tg-theme-hint-color, #999999);
+            
             --safe-top: env(safe-area-inset-top, 0px);
             --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --tg-top-safe-area: 50px; 
+            
+            --nav-bg: rgba(28, 28, 30, 0.7);
+            --border-style: 1px solid rgba(255, 255, 255, 0.1);
+            --card-radius: 28px;
+            --glass: blur(20px) saturate(160%);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             margin: 0;
             background-color: var(--tg-bg);
-            color: white;
-            font-family: 'SF Pro Display', -apple-system, system-ui, sans-serif;
-            overflow: hidden;
+            color: var(--tg-text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            letter-spacing: -0.02em;
         }
 
-        /* --- HEADER & TOP NAVIGATION --- */
-        .app-header {
+        /* --- ГЛОБАЛЬНЫЙ ФОНОВЫЙ ГРАДИЕНТ (КРЕАТИВ) --- */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, rgba(0,122,255,0.05) 0%, transparent 40%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* --- ШАПКА: КОМПАКТНОСТЬ И СТИЛЬ --- */
+        .fixed-top {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            z-index: 100;
-            padding-top: calc(var(--safe-top) + 60px); /* Место под кнопки TG */
-            padding-left: 20px;
-            padding-bottom: 20px;
-            background: linear-gradient(to bottom, black 60%, transparent);
+            z-index: 2000;
+            background: linear-gradient(to bottom, var(--tg-bg) 80%, transparent);
+            padding-top: var(--safe-top);
+            transition: transform 0.3s ease;
         }
 
-        .app-title {
-            font-size: 34px;
-            font-weight: 800;
-            letter-spacing: -1px;
-            background: var(--tg-accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        /* --- STORIES (CAPSULES) --- */
-        .stories-container {
-            padding: 0 20px 25px;
-            display: flex;
-            gap: 14px;
-            overflow-x: auto;
-            scrollbar-width: none;
-        }
-        .stories-container::-webkit-scrollbar { display: none; }
-
-        .story-capsule {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            min-width: 72px;
-        }
-
-        .story-ring {
-            width: 68px;
-            height: 68px;
-            border-radius: 26px;
-            padding: 2px;
-            background: var(--tg-accent-gradient);
-            position: relative;
-        }
-
-        .story-ring.watched {
-            background: rgba(255,255,255,0.1);
-        }
-
-        .story-ring img {
-            width: 100%;
-            height: 100%;
-            border-radius: 24px;
-            object-fit: cover;
-            border: 3px solid black;
-        }
-
-        /* --- MAIN FEED (3D LAYERS) --- */
-        .main-scroll {
-            height: 100vh;
-            overflow-y: scroll;
-            padding-top: 240px; /* Отступ чтобы сторис не заезжали под шапку */
-            padding-bottom: 150px;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .post-card {
-            margin: 0 16px 24px;
-            position: relative;
-            border-radius: 40px;
-            background: var(--card-bg);
-            border: var(--glass-border);
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .media-container {
-            width: 100%;
-            aspect-ratio: 1 / 1.2;
-            position: relative;
-        }
-
-        .media-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .overlay-glass {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 20px;
-            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+        .header-container {
+            padding: var(--tg-top-safe-area) 20px 10px;
             display: flex;
             justify-content: space-between;
-            align-items: flex-end;
-        }
-
-        /* --- ACTION BUTTONS (CLEAN) --- */
-        .side-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
             align-items: center;
         }
 
-        .btn-glass {
-            width: 44px;
-            height: 44px;
-            border-radius: 18px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
+        .header {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .status-badge {
+            background: rgba(255,255,255,0.1);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            border: var(--border-style);
+        }
+
+        /* --- ЛЕНТА КОНТАКТОВ (УМЕНЬШЕНА) --- */
+        .stories-line {
+            display: flex;
+            overflow-x: auto;
+            padding: 10px 0 15px 20px;
+            gap: 12px;
+            scrollbar-width: none;
+        }
+        .stories-line::-webkit-scrollbar { display: none; }
+
+        .story-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            min-width: 62px;
+            transition: transform 0.2s ease;
+        }
+        .story-node:active { transform: scale(0.92); }
+
+        .ring {
+            width: 58px;
+            height: 58px;
+            border-radius: 21px;
+            padding: 2px;
+            background: linear-gradient(135deg, var(--tg-accent), #a336ff);
             display: flex;
             align-items: center;
             justify-content: center;
-            border: var(--glass-border);
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
         }
 
-        .btn-glass:active { transform: scale(0.9); }
+        .avatar-img {
+            width: 52px;
+            height: 52px;
+            border-radius: 18px;
+            background: var(--tg-secondary);
+            border: 2px solid var(--tg-bg);
+            object-fit: cover;
+            background-size: cover;
+        }
 
-        .btn-glass img {
-            width: 22px;
-            height: 22px;
+        .user-label {
+            font-size: 10px;
+            font-weight: 500;
+            opacity: 0.6;
+            max-width: 60px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* --- ОСНОВНОЙ КОНТЕНТ: ГРИД-СИСТЕМА --- */
+        .scrollable-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: calc(var(--safe-top) + 180px) 12px calc(var(--safe-bottom) + 100px);
+            -webkit-overflow-scrolling: touch;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        /* КРЕАТИВ: Плиточный дизайн (чередование размеров) */
+        .story-card {
+            position: relative;
+            background: var(--tg-secondary);
+            border-radius: var(--card-radius);
+            overflow: hidden;
+            border: var(--border-style);
+            height: 260px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .story-card.large {
+            grid-column: span 2;
+            height: 380px;
+        }
+
+        .story-card img.media {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .story-card:active img.media {
+            transform: scale(1.05);
+        }
+
+        .card-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 40%, rgba(0,0,0,0.2) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 18px;
+        }
+
+        .card-info {
+            margin-bottom: 0;
+        }
+
+        .author-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .mini-pfp {
+            width: 20px;
+            height: 20px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .author-name {
+            font-weight: 700;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .caption {
+            font-size: 12px;
+            opacity: 0.7;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Кнопки действий внутри карточки (компактно) */
+        .card-quick-actions {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .mini-action {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .mini-action img {
+            width: 18px;
+            height: 18px;
             filter: invert(1);
         }
 
-        /* --- NAV ISLAND (RESTORED & IMPROVED) --- */
+        /* --- SHARE КНОПКА (СПЕЦИАЛЬНОЕ УСЛОВИЕ) --- */
+        .share-btn {
+            background: rgba(255,255,255,0.15) !important;
+        }
+        .share-btn:active {
+            transform: scale(0.9);
+            /* Затемнение отсутствует по требованию */
+        }
+
+        /* --- НАВИГАЦИЯ: ПЛАСТИЛИНОВЫЙ ОСТРОВ --- */
         .nav-wrapper {
             position: fixed;
-            bottom: calc(35px + var(--safe-bottom));
+            bottom: calc(25px + var(--safe-bottom));
             left: 50%;
             transform: translateX(-50%);
-            z-index: 1000;
+            z-index: 3000;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+        }
+
+        .nav-wrapper.hidden {
+            transform: translate(-50%, 150%);
+            opacity: 0;
         }
 
         .nav-island {
+            position: relative;
             width: 260px;
-            height: 70px;
-            background: rgba(20, 20, 22, 0.85);
-            backdrop-filter: blur(20px);
-            border-radius: 35px;
-            border: var(--glass-border);
+            height: 64px;
+            background: var(--nav-bg);
+            backdrop-filter: var(--glass);
+            -webkit-backdrop-filter: var(--glass);
+            border-radius: 32px;
             display: flex;
             justify-content: space-around;
             align-items: center;
             padding: 0 10px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            border: var(--border-style);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
         }
 
         .blob {
             position: absolute;
-            width: 54px;
-            height: 54px;
-            background: var(--tg-accent-gradient);
-            border-radius: 22px;
+            width: 50px;
+            height: 50px;
+            background: var(--tg-accent);
+            border-radius: 50%;
             z-index: 0;
-            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-            box-shadow: 0 0 15px rgba(36, 139, 245, 0.4);
+            top: 50%;
+            margin-top: -25px;
+            left: 10px;
+            transition: left 0.6s cubic-bezier(0.23, 1, 0.32, 1), 
+                        border-radius 0.4s ease, 
+                        transform 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,122,255,0.4);
+        }
+
+        .stretch-right {
+            border-radius: 35% 65% 65% 35% / 50% 50% 50% 50% !important;
+            transform: scaleX(1.25) !important;
+        }
+
+        .stretch-left {
+            border-radius: 65% 35% 35% 65% / 50% 50% 50% 50% !important;
+            transform: scaleX(1.25) !important;
         }
 
         .nav-item {
             position: relative;
-            z-index: 1;
-            width: 60px;
+            width: 55px;
             height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
+            z-index: 2;
         }
 
         .nav-item img {
-            width: 26px;
-            height: 26px;
+            width: 24px;
+            height: 24px;
             filter: invert(1);
             opacity: 0.4;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item.active img {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .profile-avatar-nav {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid transparent;
+            opacity: 0.5;
             transition: 0.3s;
         }
-
-        .nav-item.active img { opacity: 1; }
-
-        .pfp-nav {
-            width: 30px;
-            height: 30px;
-            border-radius: 10px;
-            background: #333;
-            background-size: cover;
-            border: 2px solid transparent;
+        .active .profile-avatar-nav {
+            opacity: 1;
+            border-color: #fff;
         }
-        .active .pfp-nav { border-color: white; }
+
+        /* АНИМАЦИИ ГРИДА */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .story-card {
+            animation: fadeIn 0.6s ease forwards;
+        }
 
     </style>
 </head>
 <body>
 
-    <div class="app-header">
-        <div class="app-title">ДЛЯ ТЕБЯ</div>
-        <div class="stories-container" id="stories">
+    <div class="fixed-top" id="topPanel">
+        <div class="header-container">
+            <div class="header">DISCOVER</div>
+            <div class="status-badge" id="date-label">ФЕВРАЛЬ</div>
+        </div>
+        <div class="stories-line" id="contacts-line">
+            <div class="story-node" onclick="handleStoryClick('me')">
+                <div class="ring" style="background: var(--tg-hint)">
+                    <div class="avatar-img" id="my-pfp"></div>
+                </div>
+                <div class="user-label">Вы</div>
+            </div>
             </div>
     </div>
 
-    <div class="main-scroll" id="mainScroll">
+    <div class="scrollable-content" id="feed">
         </div>
 
-    <div class="nav-wrapper">
+    <div class="nav-wrapper" id="navWrapper">
         <div class="nav-island">
             <div class="blob" id="blob"></div>
-            <div class="nav-item active" onclick="navTo(0, this)">
-                <img src="https://cdn-icons-png.flaticon.com/512/6997/6997164.png">
+            <div class="nav-item active" id="tab-0" onclick="move(0)">
+                <img src="https://cdn-icons-png.flaticon.com/512/1946/1946488.png" alt="feed">
             </div>
-            <div class="nav-item" onclick="navTo(1, this)">
-                <img src="https://cdn-icons-png.flaticon.com/512/8025/8025278.png">
+            <div class="nav-item" id="tab-1" onclick="move(1)">
+                <img src="https://cdn-icons-png.flaticon.com/512/2151/2151141.png" alt="search">
             </div>
-            <div class="nav-item" onclick="navTo(2, this)">
-                <div class="pfp-nav" id="navPfp"></div>
+            <div class="nav-item" id="tab-2" onclick="move(2)">
+                <div class="profile-avatar-nav" id="nav-pfp"></div>
             </div>
         </div>
     </div>
@@ -255,82 +405,166 @@
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
+        
+        // Установка темы
+        document.documentElement.style.setProperty('--tg-bg', tg.backgroundColor || '#000000');
+        
+        const user = tg.initDataUnsafe.user;
+        const myPfp = document.getElementById('my-pfp');
+        const navPfp = document.getElementById('nav-pfp');
 
-        // 1. Настройка контента (Креативный подход)
-        const mockStories = [
-            { id: 1, img: 'https://i.pravatar.cc/150?u=1' },
-            { id: 2, img: 'https://i.pravatar.cc/150?u=2' },
-            { id: 3, img: 'https://i.pravatar.cc/150?u=3' },
-            { id: 4, img: 'https://i.pravatar.cc/150?u=4' },
-            { id: 5, img: 'https://i.pravatar.cc/150?u=5' }
+        if (user?.photo_url) {
+            myPfp.style.backgroundImage = `url(${user.photo_url})`;
+            navPfp.style.backgroundImage = `url(${user.photo_url})`;
+        } else {
+            myPfp.style.backgroundColor = '#333';
+            navPfp.style.backgroundColor = '#333';
+        }
+
+        // --- ГЕНЕРАЦИЯ ДАННЫХ ---
+        const contacts = [
+            { id: 1, name: "Алексей", img: "https://i.pravatar.cc/150?u=1" },
+            { id: 2, name: "Марина", img: "https://i.pravatar.cc/150?u=2" },
+            { id: 3, name: "Дизайн Код", img: "https://i.pravatar.cc/150?u=3" },
+            { id: 4, name: "Erika", img: "https://i.pravatar.cc/150?u=4" },
+            { id: 5, name: "Blogger", img: "https://i.pravatar.cc/150?u=5" },
+            { id: 6, name: "Crypto", img: "https://i.pravatar.cc/150?u=6" }
         ];
 
-        const mockPosts = [
-            { user: 'Alex Red', likes: '12K', img: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800' },
-            { user: 'Inspo Lab', likes: '8.4K', img: 'https://images.unsplash.com/photo-1633167606207-d840b5070fc2?w=800' }
+        const feedItems = [
+            { id: 101, type: 'large', author: "Julian", text: "Architecture of the future is here. #concept", img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800", likes: "2.4k" },
+            { id: 102, type: 'small', author: "Elena", text: "Morning routine", img: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500", likes: "840" },
+            { id: 103, type: 'small', author: "Marcus", text: "Cyberpunk vibes in Tokyo", img: "https://images.unsplash.com/photo-1542641728-6ca359b085f4?w=500", likes: "1.1k" },
+            { id: 104, type: 'large', author: "Traveler", text: "Hidden gems of the Alps. Never stop exploring the world around you.", img: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800", likes: "12k" },
+            { id: 105, type: 'small', author: "Foodie", text: "Healthy bowl", img: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500", likes: "3k" },
+            { id: 106, type: 'small', author: "Dev", text: "Setup 2026", img: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=500", likes: "5k" }
         ];
 
-        // Рендер сторис
-        const storiesTitle = `<div class="story-capsule"><div class="story-ring"><img src="${tg.initDataUnsafe.user?.photo_url || 'https://i.pravatar.cc/100'}"></div><span style="font-size:10px; opacity:0.6">Вы</span></div>`;
-        document.getElementById('stories').innerHTML = storiesTitle + mockStories.map(s => `
-            <div class="story-capsule">
-                <div class="story-ring ${s.id > 3 ? 'watched' : ''}">
-                    <img src="${s.img}">
+        // Рендер контактов
+        const contactsLine = document.getElementById('contacts-line');
+        contacts.forEach(c => {
+            const node = document.createElement('div');
+            node.className = 'story-node';
+            node.innerHTML = `
+                <div class="ring">
+                    <div class="avatar-img" style="background-image: url(${c.img})"></div>
                 </div>
-                <span style="font-size:10px; opacity:0.6">User ${s.id}</span>
-            </div>
-        `).join('');
+                <div class="user-label">${c.name}</div>
+            `;
+            contactsLine.appendChild(node);
+        });
 
         // Рендер ленты
-        document.getElementById('mainScroll').innerHTML = mockPosts.map(p => `
-            <div class="post-card">
-                <div class="media-container">
-                    <img src="${p.img}" loading="lazy">
-                    <div class="overlay-glass">
-                        <div>
-                            <div style="font-weight:700; font-size:18px; margin-bottom:4px;">${p.user}</div>
-                            <div style="font-size:13px; opacity:0.7;">Digital Artifact #024</div>
-                        </div>
-                        <div class="side-actions">
-                            <div class="btn-glass" onclick="haptic('heavy')">
-                                <img src="https://cdn-icons-png.flaticon.com/512/7754/7754213.png">
-                            </div>
-                            <div class="btn-glass" onclick="haptic('medium')">
-                                <img src="https://cdn-icons-png.flaticon.com/512/6997/6997415.png">
-                            </div>
-                            <div class="btn-glass" style="background:var(--tg-accent-gradient); border:none;" onclick="haptic('light')">
-                                <img src="https://cdn-icons-png.flaticon.com/512/2550/2550240.png">
-                            </div>
-                        </div>
+        const feed = document.getElementById('feed');
+        feedItems.forEach((item, index) => {
+            const card = document.createElement('div');
+            card.className = `story-card ${item.type}`;
+            card.style.animationDelay = `${index * 0.1}s`;
+            card.innerHTML = `
+                <img src="${item.img}" class="media" loading="lazy">
+                <div class="card-quick-actions">
+                    <div class="mini-action" onclick="handleLike(this)">
+                        <img src="https://cdn-icons-png.flaticon.com/512/1077/1077035.png">
+                    </div>
+                    <div class="mini-action share-btn" onclick="handleShare()">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2550/2550240.png">
                     </div>
                 </div>
-            </div>
-        `).join('');
+                <div class="card-overlay">
+                    <div class="card-info">
+                        <div class="author-group">
+                            <img src="https://i.pravatar.cc/50?u=${item.author}" class="mini-pfp">
+                            <span class="author-name">${item.author}</span>
+                        </div>
+                        <span class="caption">${item.text}</span>
+                    </div>
+                </div>
+            `;
+            feed.appendChild(card);
+        });
 
-        // 2. Навигация (Blob logic)
+        // --- ЛОГИКА ТАББАРА (ПЛАСТИЛИН) ---
         const blob = document.getElementById('blob');
-        function navTo(index, el) {
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            el.classList.add('active');
+        const items = document.querySelectorAll('.nav-item');
+        let currentIndex = 0;
+
+        function move(index) {
+            const targetItem = document.getElementById(`tab-${index}`);
+            if (!targetItem) return;
+
+            if (index === currentIndex) {
+                // Пульсация при повторном клике
+                blob.style.transform = `scale(1.15)`;
+                setTimeout(() => blob.style.transform = '', 300);
+                tg.HapticFeedback.impactOccurred('light');
+                return;
+            }
+
+            items.forEach(item => item.classList.remove('active'));
+            blob.classList.remove('stretch-right', 'stretch-left');
+
+            if (index > currentIndex) blob.classList.add('stretch-right');
+            else blob.classList.add('stretch-left');
+
+            const islandPadding = 10;
+            const targetX = targetItem.offsetLeft + (targetItem.offsetWidth / 2) - (blob.offsetWidth / 2);
+            blob.style.left = `${targetX}px`;
             
-            const x = el.offsetLeft + (el.offsetWidth / 2) - (blob.offsetWidth / 2);
-            blob.style.left = `${x}px`;
-            
+            targetItem.classList.add('active');
+            currentIndex = index;
+
+            setTimeout(() => {
+                blob.classList.remove('stretch-right', 'stretch-left');
+            }, 350);
+
             tg.HapticFeedback.impactOccurred('medium');
         }
 
-        function haptic(style) {
-            tg.HapticFeedback.impactOccurred(style);
+        // --- УМНОЕ СКРЫТИЕ ПРИ СКРОЛЛЕ ---
+        let lastScroll = 0;
+        const navWrapper = document.getElementById('navWrapper');
+        const topPanel = document.getElementById('topPanel');
+        const feedContainer = document.getElementById('feed');
+
+        feedContainer.addEventListener('scroll', () => {
+            const currentScroll = feedContainer.scrollTop;
+            
+            if (currentScroll > lastScroll && currentScroll > 100) {
+                // Скролл вниз - прячем элементы
+                navWrapper.classList.add('hidden');
+                topPanel.style.transform = 'translateY(-100px)';
+            } else {
+                // Скролл вверх - показываем
+                navWrapper.classList.remove('hidden');
+                topPanel.style.transform = 'translateY(0)';
+            }
+            lastScroll = currentScroll;
+        });
+
+        // Вспомогательные функции
+        function handleLike(el) {
+            tg.HapticFeedback.impactOccurred('heavy');
+            el.style.backgroundColor = 'var(--tg-accent)';
+            el.querySelector('img').style.filter = 'brightness(10)';
         }
 
-        // Синхронизация аватара
-        if (tg.initDataUnsafe.user?.photo_url) {
-            document.getElementById('navPfp').style.backgroundImage = `url(${tg.initDataUnsafe.user.photo_url})`;
+        function handleShare() {
+            tg.HapticFeedback.impactOccurred('medium');
+            // Share logic... (не затемняется согласно инструкции)
         }
 
-        // Инициализация позиции блоба
-        window.onload = () => navTo(0, document.querySelector('.nav-item'));
+        function handleStoryClick(id) {
+            tg.HapticFeedback.notificationOccurred('success');
+        }
 
+        // Инициализация позиции
+        window.onload = () => {
+            setTimeout(() => move(0), 100);
+            
+            // Установка текущего месяца
+            const months = ["ЯНВАРЬ", "ФЕВРАЛЬ", "МАРТ", "АПРЕЛЬ", "МАЙ", "ИЮНЬ", "ИЮЛЬ", "АВГУСТ", "СЕНТЯБРЬ", "ОКТЯБРЬ", "НОЯБРЬ", "ДЕКАБРЬ"];
+            document.getElementById('date-label').innerText = months[new Date().getMonth()];
+        };
     </script>
 </body>
 </html>
