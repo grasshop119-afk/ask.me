@@ -11,7 +11,6 @@
             --nav-bg: rgba(255, 255, 255, 0.1);
             --safe-top: env(safe-area-inset-top, 0px);
             --safe-bottom: env(safe-area-inset-bottom, 0px);
-            /* Отступ для заголовка под системной кнопкой Close/Settings */
             --tg-safe-h: 60px; 
         }
 
@@ -44,16 +43,17 @@
 
         .nav-island {
             position: relative;
-            width: 240px;
+            /* Увеличили ширину под 4 иконки */
+            width: 280px; 
             height: 60px;
             background: var(--nav-bg);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
             border-radius: 30px;
             display: flex;
-            justify-content: space-between; /* Раздвигаем иконки */
+            justify-content: space-between;
             align-items: center;
-            padding: 0 15px; /* Увеличили боковые отступы */
+            padding: 0 12px;
             border: 1px solid rgba(255,255,255,0.08);
         }
 
@@ -66,8 +66,7 @@
             z-index: 0;
             top: 50%;
             margin-top: -23px;
-            left: 15px;
-            /* Плавность движения */
+            left: 12px;
             transition: left 0.5s cubic-bezier(0.19, 1, 0.22, 1), 
                         border-radius 0.3s ease, 
                         transform 0.3s ease;
@@ -96,8 +95,8 @@
         }
 
         .nav-item img {
-            width: 26px;
-            height: 26px;
+            width: 24px;
+            height: 24px;
             filter: invert(1);
             opacity: 0.3;
             transition: opacity 0.3s ease;
@@ -120,11 +119,16 @@
         .active .avatar {
             opacity: 1;
         }
+
+        /* Оранжевый акцент для иконки сторис, если нужно выделить */
+        .story-btn img {
+            /* filter: none; если захочешь цветную иконку */
+        }
     </style>
 </head>
 <body>
 
-    <div class="header" id="title">FOR YOU</div>
+    <div class="header" id="title">ДЛЯ ТЕБЯ</div>
 
     <div class="nav-wrapper">
         <div class="nav-island">
@@ -137,8 +141,12 @@
             <div class="nav-item" id="tab-1" onclick="move(1)">
                 <img src="https://cdn-icons-png.flaticon.com/512/8025/8025278.png" alt="search">
             </div>
+
+            <div class="nav-item story-btn" id="tab-2" onclick="createStory(2)">
+                <img src="https://cdn-icons-png.flaticon.com/512/10464/10464654.png" alt="story">
+            </div>
             
-            <div class="nav-item" id="tab-2" onclick="move(2)">
+            <div class="nav-item" id="tab-3" onclick="move(3)">
                 <div class="avatar" id="pfp"></div>
             </div>
         </div>
@@ -149,18 +157,35 @@
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
-        // Включаем Fullscreen если доступно
         if (tg.requestFullscreen) tg.requestFullscreen();
 
         const blob = document.getElementById('blob');
         const items = document.querySelectorAll('.nav-item');
         let currentIndex = -1;
 
+        // Специальная функция для сторис
+        function createStory(index) {
+            // Сначала двигаем анимацию
+            move(index);
+            
+            // Через небольшую паузу вызываем нативный функционал TG
+            setTimeout(() => {
+                if (tg.shareToStory) {
+                    // Здесь можно передать URL картинки или оставить пустым для выбора из галереи
+                    tg.shareToStory("https://example.com/your-media.jpg", {
+                        text: "Check out my new app!",
+                        widget_link: { url: "https://t.me/your_bot" }
+                    });
+                } else {
+                    console.log("Stories API not supported or testing in browser");
+                }
+            }, 300);
+        }
+
         function move(index) {
             const targetItem = document.getElementById(`tab-${index}`);
             
             if (index === currentIndex) {
-                // Легкая случайная деформация (еще меньше диапазон)
                 const r = () => Math.floor(Math.random() * 10 + 45); 
                 blob.style.borderRadius = `${r()}% ${100-r()}% ${r()}% ${100-r()}% / ${100-r()}% ${r()}% ${100-r()}% ${r()}%`;
                 blob.style.transform = `scale(1.05)`;
@@ -188,7 +213,6 @@
             targetItem.classList.add('active');
             currentIndex = index;
 
-            // Конец деформации ЧУТЬ РАНЬШЕ (200ms)
             setTimeout(() => {
                 blob.classList.remove('stretch-right', 'stretch-left');
             }, 200);
@@ -196,12 +220,10 @@
             if (currentIndex !== -1) tg.HapticFeedback.impactOccurred('medium');
         }
 
-        const lang = tg.initDataUnsafe.user?.language_code || 'en';
-        const t = { ru: "ДЛЯ ТЕБЯ", zh: "为你推荐", en: "FOR YOU" };
-        document.getElementById('title').innerText = t[lang] || t.en;
-
-        if (tg.initDataUnsafe.user?.photo_url) {
-            document.getElementById('pfp').style.backgroundImage = `url(${tg.initDataUnsafe.user.photo_url})`;
+        // Локализация и аватар
+        const user = tg.initDataUnsafe.user;
+        if (user?.photo_url) {
+            document.getElementById('pfp').style.backgroundImage = `url(${user.photo_url})`;
         }
 
         window.onload = () => {
