@@ -15,7 +15,7 @@
             margin: 0;
             background-color: var(--tg-bg);
             color: var(--tg-text);
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: -apple-system, sans-serif;
             height: 100vh;
             display: flex;
             flex-direction: column;
@@ -30,7 +30,6 @@
             text-transform: uppercase;
         }
 
-        /* Навигация */
         .nav-wrapper {
             position: fixed;
             bottom: 30px;
@@ -41,8 +40,8 @@
 
         .nav-island {
             position: relative;
-            width: 220px; /* Сделали уже */
-            height: 54px;  /* Компактнее */
+            width: 220px;
+            height: 54px;
             background: var(--nav-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
@@ -50,34 +49,35 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 8px;
+            padding: 0 10px; /* Симметричные отступы */
             border: 1px solid rgba(255,255,255,0.05);
         }
 
-        /* Пластилиновый Blob */
+        /* Пластилиновый круг */
         .blob {
             position: absolute;
-            left: 8px;
-            width: 40px;
-            height: 40px;
+            width: 42px;
+            height: 42px;
             background: var(--tg-accent);
             border-radius: 50%;
             z-index: 0;
-            /* Плавность движения и формы */
-            transition: 
-                left 0.6s cubic-bezier(0.23, 1, 0.32, 1),
-                border-radius 0.4s ease,
-                transform 0.4s ease;
+            left: 10px; /* Начальная позиция */
+            transition: left 0.5s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
-        /* Деформация в движении - мягкая */
-        .blob.stretching {
-            border-radius: 35% 65% 65% 35% / 50% 50% 50% 50%;
-            transform: scaleX(1.15);
+        /* Анимация "пластилина" во время движения */
+        @keyframes liquid-stretch {
+            0% { border-radius: 50%; transform: scaleX(1); }
+            45% { border-radius: 35% 65% 65% 35% / 50% 50% 50% 50%; transform: scaleX(1.25); }
+            100% { border-radius: 50%; transform: scaleX(1); }
+        }
+
+        .blob.animate {
+            animation: liquid-stretch 0.5s ease-in-out;
         }
 
         .nav-item {
-            width: 60px;
+            flex: 1; /* Равное распределение пространства */
             height: 100%;
             display: flex;
             align-items: center;
@@ -91,16 +91,15 @@
         .nav-item img {
             width: 22px;
             height: 22px;
-            transition: opacity 0.3s ease;
             filter: invert(1);
             opacity: 0.3;
+            transition: opacity 0.3s;
         }
 
         .nav-item.active img {
             opacity: 1;
         }
 
-        /* Аватарка без контура */
         .avatar {
             width: 26px;
             height: 26px;
@@ -109,15 +108,14 @@
             background-size: cover;
             background-position: center;
             opacity: 0.4;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.3s;
         }
 
         .active .avatar {
             opacity: 1;
         }
 
-        /* Лента */
-        .story-container {
+        .story-placeholder {
             flex: 1;
             margin: 10px 20px 100px;
             background: linear-gradient(180deg, #111, #000);
@@ -126,7 +124,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.1);
         }
     </style>
 </head>
@@ -134,8 +132,8 @@
 
     <div class="header" id="title">FOR YOU</div>
 
-    <div class="story-container">
-        <span>Content View</span>
+    <div class="story-placeholder">
+        <span>Story View</span>
     </div>
 
     <div class="nav-wrapper">
@@ -168,29 +166,30 @@
             items.forEach(item => item.classList.remove('active'));
             el.classList.add('active');
 
-            // Расчет позиции блоба
-            // Ширина острова (220) минус паддинги и размер блоба
-            const step = (220 - 16 - 40) / 2;
-            const xPos = 8 + (index * step);
+            // Точный расчет центрирования
+            const islandWidth = 220;
+            const padding = 10;
+            const blobWidth = 42;
+            const availableSpace = islandWidth - (padding * 2);
+            const sectionWidth = availableSpace / 3;
+            
+            // Центр иконки минус половина ширины блоба плюс начальный паддинг
+            const xPos = padding + (index * sectionWidth) + (sectionWidth / 2) - (blobWidth / 2);
 
-            // Анимация растяжения
-            blob.classList.add('stretching');
+            // Сброс и запуск анимации
+            blob.classList.remove('animate');
+            void blob.offsetWidth; // Магия для рестарта CSS анимации
+            blob.classList.add('animate');
+            
             blob.style.left = `${xPos}px`;
-
-            // Возвращаем форму после завершения движения
-            setTimeout(() => {
-                blob.classList.remove('stretching');
-            }, 400);
 
             tg.HapticFeedback.impactOccurred('light');
         }
 
-        // Локализация
         const lang = tg.initDataUnsafe.user?.language_code || 'en';
         const t = { ru: "ДЛЯ ТЕБЯ", zh: "为你推荐", en: "FOR YOU" };
         document.getElementById('title').innerText = t[lang] || t.en;
 
-        // Аватар
         if (tg.initDataUnsafe.user?.photo_url) {
             document.getElementById('pfp').style.backgroundImage = `url(${tg.initDataUnsafe.user.photo_url})`;
         }
