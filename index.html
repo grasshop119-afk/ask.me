@@ -22,11 +22,13 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            /* Базовый отступ для Fullscreen */
             padding-top: var(--safe-top);
         }
 
         .header {
-            padding: 20px 25px 10px;
+            /* Опускаем заголовок ниже системной кнопки "Закрыть" */
+            padding: 40px 25px 10px; 
             font-size: 34px;
             font-weight: 900;
             letter-spacing: -1.5px;
@@ -35,7 +37,7 @@
 
         .content-area {
             flex: 1;
-            margin: 10px 15px calc(100px + var(--safe-bottom));
+            margin: 10px 15px calc(110px + var(--safe-bottom));
             background: linear-gradient(180deg, #111, #000);
             border-radius: 35px;
             border: 1px solid rgba(255,255,255,0.05);
@@ -51,16 +53,16 @@
 
         .nav-island {
             position: relative;
-            width: 240px;
+            width: 280px; /* Сделали панель шире */
             height: 60px;
             background: var(--nav-bg);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
             border-radius: 30px;
             display: flex;
-            justify-content: space-around;
+            justify-content: space-around; /* Равномерно распределяем иконки */
             align-items: center;
-            padding: 0 10px;
+            padding: 0 15px;
             border: 1px solid rgba(255,255,255,0.08);
         }
 
@@ -73,14 +75,12 @@
             z-index: 0;
             top: 50%;
             margin-top: -23px;
-            left: 10px;
-            /* Важно: transition для borderRadius должен быть таким же, как для движения */
+            left: 15px;
             transition: left 0.5s cubic-bezier(0.19, 1, 0.22, 1), 
-                        border-radius 0.4s ease, 
-                        transform 0.4s ease;
+                        border-radius 0.3s ease, 
+                        transform 0.3s ease;
         }
 
-        /* Направленная деформация при движении */
         .stretch-right {
             border-radius: 40% 70% 70% 40% / 50% 50% 50% 50% !important;
             transform: scaleX(1.2);
@@ -93,7 +93,7 @@
 
         .nav-item {
             position: relative;
-            width: 50px;
+            width: 60px; /* Увеличили область нажатия */
             height: 100%;
             display: flex;
             align-items: center;
@@ -158,7 +158,11 @@
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
-        if (tg.requestFullscreen) tg.requestFullscreen();
+        
+        // Включаем Fullscreen режим, если поддерживается
+        if (tg.requestFullscreen) {
+            tg.requestFullscreen();
+        }
 
         const blob = document.getElementById('blob');
         const items = document.querySelectorAll('.nav-item');
@@ -167,24 +171,21 @@
         function move(index) {
             const targetItem = document.getElementById(`tab-${index}`);
             
-            // Если повторное нажатие
             if (index === currentIndex) {
-                // Уменьшенная деформация (40-60%)
-                const r = () => Math.floor(Math.random() * 20 + 40); 
+                // Деликатная случайная деформация
+                const r = () => Math.floor(Math.random() * 15 + 42); 
                 blob.style.borderRadius = `${r()}% ${100-r()}% ${r()}% ${100-r()}% / ${100-r()}% ${r()}% ${100-r()}% ${r()}%`;
-                blob.style.transform = `scale(1.08)`;
+                blob.style.transform = `scale(1.05)`;
                 
-                // ОЧИСТКА стилей, чтобы не ломать анимацию движения
                 setTimeout(() => {
                     blob.style.borderRadius = ''; 
                     blob.style.transform = '';
-                }, 300);
+                }, 250);
                 
                 tg.HapticFeedback.notificationOccurred('success');
                 return;
             }
 
-            // Обычное движение
             items.forEach(item => item.classList.remove('active'));
             blob.classList.remove('stretch-right', 'stretch-left');
 
@@ -199,9 +200,10 @@
             targetItem.classList.add('active');
             currentIndex = index;
 
+            // Завершение деформации чуть раньше (200ms)
             setTimeout(() => {
                 blob.classList.remove('stretch-right', 'stretch-left');
-            }, 300);
+            }, 200);
 
             if (currentIndex !== -1) tg.HapticFeedback.impactOccurred('medium');
         }
@@ -215,7 +217,7 @@
         }
 
         window.onload = () => {
-            setTimeout(() => move(0), 50);
+            setTimeout(() => move(0), 100);
         };
     </script>
 </body>
