@@ -9,148 +9,172 @@
             --tg-accent: var(--tg-theme-button-color, #007AFF);
             --tg-secondary: var(--tg-theme-secondary-bg-color, #1c1c1d);
             --tg-text: var(--tg-theme-text-color, #ffffff);
-            --tg-hint: var(--tg-theme-hint-color, #999999);
-            
-            /* Безопасные зоны для Fullscreen */
             --safe-top: env(safe-area-inset-top, 0px);
             --safe-bottom: env(safe-area-inset-bottom, 0px);
-            --tg-top-safe-area: 60px; /* Отступ под системные кнопки TG */
-            
-            --nav-bg: rgba(28, 28, 30, 0.85);
-            --border-style: 1px solid rgba(255, 255, 255, 0.08);
+            --header-h: 120px;
         }
 
         body {
             margin: 0;
             background-color: var(--tg-bg);
             color: var(--tg-text);
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden; /* Запрещаем скролл всему body */
+            font-family: -apple-system, system-ui, sans-serif;
+            overflow: hidden;
+            touch-action: none; /* Контролируем свайпы сами */
         }
 
-        /* --- ЗАКРЕПЛЕННЫЙ ВЕРХ --- */
-        .fixed-top {
+        /* --- PULL TO REFRESH LAYER --- */
+        #ptr-indicator {
+            position: absolute;
+            top: calc(var(--safe-top) + 20px);
+            left: 50%;
+            transform: translateX(-50%) translateY(-50px);
+            transition: transform 0.2s cubic-bezier(0,0,0.2,1);
+            z-index: 5;
+        }
+
+        /* --- FIXED DYNAMIC HEADER --- */
+        .header-fixed {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            z-index: 2000;
+            z-index: 1000;
             background: var(--tg-bg);
-            padding-top: var(--safe-top);
+            padding: calc(var(--safe-top) + 40px) 25px 20px;
+            transition: transform 0.1s linear;
         }
 
-        .header-container {
-            padding: var(--tg-top-safe-area) 25px 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header {
-            font-size: 32px;
+        .header-fixed h1 {
+            margin: 0;
+            font-size: 38px;
             font-weight: 900;
-            letter-spacing: -1.2px;
-            text-transform: uppercase;
+            letter-spacing: -2px;
+            transform-origin: left center;
         }
 
-        .stories-line {
+        /* --- STORIES: THE BUBBLE TRACK --- */
+        .stories-track {
+            padding: 10px 0 25px 20px;
             display: flex;
+            gap: 18px;
             overflow-x: auto;
-            padding: 10px 0 20px 20px;
-            gap: 15px;
             scrollbar-width: none;
-            border-bottom: var(--border-style);
+            background: var(--tg-bg);
         }
-        .stories-line::-webkit-scrollbar { display: none; }
+        .stories-track::-webkit-scrollbar { display: none; }
 
-        /* --- СКРОЛЛ-ЗОНА КОНТЕНТА --- */
-        .scrollable-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: calc(var(--safe-top) + var(--tg-top-safe-area) + 140px) 16px calc(var(--safe-bottom) + 120px);
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* --- СТОРИС-КАРТОЧКИ --- */
-        .story-card {
+        .bubble {
             position: relative;
-            width: 100%;
-            aspect-ratio: 9 / 14;
+            min-width: 65px;
+            text-align: center;
+        }
+
+        .bubble-frame {
+            width: 65px;
+            height: 65px;
+            border-radius: 24px;
             background: var(--tg-secondary);
-            border-radius: 35px;
+            border: 1.5px solid rgba(255,255,255,0.1);
+            position: relative;
             overflow: hidden;
-            margin-bottom: 20px;
-            border: var(--border-style);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .story-card img.media {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        .bubble:active .bubble-frame { transform: scale(0.9); }
 
-        .card-overlay {
+        /* Метка Online — чисто механика ТГ */
+        .online-badge {
             position: absolute;
-            inset: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 50%);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            padding: 25px;
+            bottom: -2px;
+            right: -2px;
+            width: 14px;
+            height: 14px;
+            background: #31d158;
+            border: 3px solid var(--tg-bg);
+            border-radius: 50%;
+            z-index: 10;
         }
 
-        .card-bottom {
+        /* --- THE STACK CONTENT (MAIN FEED) --- */
+        #scroll-container {
+            height: 100vh;
+            overflow-y: scroll;
+            padding-top: calc(var(--header-h) + var(--safe-top) + 110px);
+            padding-bottom: 200px;
+            transition: transform 0.1s linear;
+        }
+
+        .stack-tile {
+            margin: 0 16px 25px;
+            background: var(--tg-secondary);
+            border-radius: 30px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.05);
+            overflow: hidden;
+        }
+
+        .tile-media {
+            width: 100%;
+            min-height: 300px;
+            max-height: 500px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .tile-glass {
+            padding: 20px;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            box-sizing: border-box;
             display: flex;
             justify-content: space-between;
-            align-items: flex-end;
+            align-items: center;
         }
 
-        .author-name { font-weight: 800; font-size: 18px; margin-bottom: 5px; display: block; }
-        .caption { font-size: 14px; opacity: 0.8; }
-
-        .card-actions {
+        .tile-actions {
             display: flex;
-            flex-direction: column;
             gap: 20px;
-            align-items: center;
         }
 
-        .action-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+        .tile-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .action-btn img { width: 30px; height: 30px; filter: invert(1); }
-        .action-btn span { font-size: 12px; font-weight: 700; }
+        .tile-btn img {
+            width: 26px;
+            height: 26px;
+            filter: invert(1);
+        }
 
-        /* --- ВОССТАНОВЛЕННЫЙ ПОДВАЛ (ПЛАСТИЛИН) --- */
+        /* --- NAVIGATION (PLASTICINE RESTORED) --- */
         .nav-wrapper {
             position: fixed;
             bottom: calc(30px + var(--safe-bottom));
             left: 50%;
             transform: translateX(-50%);
-            z-index: 3000;
+            z-index: 2000;
         }
 
         .nav-island {
-            position: relative;
             width: 240px;
             height: 60px;
-            background: var(--nav-bg);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
+            background: rgba(28, 28, 30, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border-radius: 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 0 15px;
-            border: var(--border-style);
+            border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
         }
 
         .blob {
@@ -159,94 +183,48 @@
             height: 46px;
             background: var(--tg-accent);
             border-radius: 50%;
-            z-index: 0;
-            top: 50%;
-            margin-top: -23px;
             left: 15px;
-            transition: left 0.5s cubic-bezier(0.19, 1, 0.22, 1), 
-                        border-radius 0.3s ease, 
-                        transform 0.3s ease;
+            transition: left 0.5s cubic-bezier(0.19, 1, 0.22, 1), border-radius 0.3s ease;
         }
 
-        .stretch-right {
-            border-radius: 40% 70% 70% 40% / 50% 50% 50% 50% !important;
-            transform: scaleX(1.2) !important;
-        }
+        .nav-item { width: 50px; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 2; }
+        .nav-item img, .profile-pfp { width: 26px; height: 26px; filter: invert(1); opacity: 0.3; transition: 0.3s; }
+        .nav-item.active img, .nav-item.active .profile-pfp { opacity: 1; }
+        .profile-pfp { border-radius: 50%; border: 1px solid #fff; }
 
-        .stretch-left {
-            border-radius: 70% 40% 40% 70% / 50% 50% 50% 50% !important;
-            transform: scaleX(1.2) !important;
-        }
-
-        .nav-item {
-            position: relative;
-            width: 50px;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .nav-item img {
-            width: 26px;
-            height: 26px;
-            filter: invert(1);
-            opacity: 0.3;
-            transition: opacity 0.3s ease;
-        }
-
-        .nav-item.active img { opacity: 1; }
-
-        .profile-avatar {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background-color: #333;
-            background-size: cover;
-            background-position: center;
-            opacity: 0.4;
-        }
-        .active .profile-avatar { opacity: 1; }
-
-        /* Элементы Сториз в шапке */
-        .story-node { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 70px; }
-        .ring { width: 64px; height: 64px; border-radius: 22px; padding: 2px; background: linear-gradient(45deg, var(--tg-accent), #a336ff); display: flex; align-items: center; justify-content: center; }
-        .avatar-img { width: 58px; height: 58px; border-radius: 20px; background: var(--tg-secondary); border: 2px solid var(--tg-bg); object-fit: cover; }
-        .user-label { font-size: 10px; font-weight: 600; opacity: 0.7; }
+        .stretch-right { border-radius: 40% 70% 70% 40% / 50% 50% 50% 50% !important; transform: scaleX(1.18); }
+        .stretch-left { border-radius: 70% 40% 40% 70% / 50% 50% 50% 50% !important; transform: scaleX(1.18); }
 
     </style>
 </head>
 <body>
 
-    <div class="fixed-top">
-        <div class="header-container">
-            <div class="header" id="title">ДЛЯ ТЕБЯ</div>
-        </div>
-        <div class="stories-line" id="contacts-line">
-            <div class="story-node">
-                <div class="ring"><div class="avatar-img" id="my-pfp"></div></div>
-                <div class="user-label">Вы</div>
-            </div>
-            </div>
+    <div id="ptr-indicator">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--tg-accent)" stroke-width="3" stroke-linecap="round">
+            <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+        </svg>
     </div>
 
-    <div class="scrollable-content" id="feed">
+    <div class="header-fixed" id="header">
+        <h1 id="header-text">ДЛЯ ТЕБЯ</h1>
+        <div class="stories-track" id="stories">
+            <div class="bubble">
+                <div class="bubble-frame"><div id="my-avatar" style="width:100%;height:100%;background-size:cover;"></div></div>
+                <div style="font-size:10px; margin-top:5px; font-weight:700;">Вы</div>
+            </div>
         </div>
+    </div>
+
+    <div id="scroll-container">
+        <div id="feed-stack"></div>
+    </div>
 
     <div class="nav-wrapper">
         <div class="nav-island">
             <div class="blob" id="blob"></div>
-            <div class="nav-item active" id="tab-0" onclick="move(0)">
-                <img src="https://cdn-icons-png.flaticon.com/512/6997/6997164.png" alt="home">
-            </div>
-            <div class="nav-item" id="tab-1" onclick="move(1)">
-                <img src="https://cdn-icons-png.flaticon.com/512/8025/8025278.png" alt="search">
-            </div>
-            <div class="nav-item" id="tab-2" onclick="move(2)">
-                <div class="profile-avatar" id="nav-pfp"></div>
-            </div>
+            <div class="nav-item active" onclick="move(0, this)"><img src="https://cdn-icons-png.flaticon.com/512/6997/6997164.png"></div>
+            <div class="nav-item" onclick="move(1, this)"><img src="https://cdn-icons-png.flaticon.com/512/8025/8025278.png"></div>
+            <div class="nav-item" onclick="move(2, this)"><div class="profile-pfp" id="nav-pfp"></div></div>
         </div>
     </div>
 
@@ -255,103 +233,105 @@
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
-        if (tg.requestFullscreen) tg.requestFullscreen();
 
-        tg.SettingsButton.show();
+        // --- ДИНАМИКА PULL-TO-REFRESH ---
+        const container = document.getElementById('scroll-container');
+        const headerText = document.getElementById('header-text');
+        const ptr = document.getElementById('ptr-indicator');
+        let startY = 0;
 
-        // 1. Синхронизация данных
-        const user = tg.initDataUnsafe.user;
-        if (user?.photo_url) {
-            document.getElementById('nav-pfp').style.backgroundImage = `url(${user.photo_url})`;
-            document.getElementById('my-pfp').style.backgroundImage = `url(${user.photo_url})`;
-        }
+        container.addEventListener('touchstart', e => {
+            if (container.scrollTop === 0) startY = e.touches[0].pageY;
+        });
 
-        // 2. Генерация реалистичных контактов
-        const contactsLine = document.getElementById('contacts-line');
-        for(let i=0; i<10; i++) {
-            contactsLine.innerHTML += `
-                <div class="story-node">
-                    <div class="ring" style="background: ${i > 3 ? 'rgba(255,255,255,0.1)' : ''}">
-                        <img class="avatar-img" src="https://i.pravatar.cc/150?u=user${i}">
-                    </div>
-                    <div class="user-label">Контакт ${i+1}</div>
-                </div>
-            `;
-        }
+        container.addEventListener('touchmove', e => {
+            const y = e.touches[0].pageY;
+            const dist = y - startY;
+            if (container.scrollTop === 0 && dist > 0) {
+                const move = Math.pow(dist, 0.8);
+                container.style.transform = `translateY(${move}px)`;
+                headerText.style.transform = `scale(${1 + move/500})`;
+                ptr.style.transform = `translateX(-50%) translateY(${move - 50}px) rotate(${move*2}deg)`;
+                if (move > 70) tg.HapticFeedback.impactOccurred('light');
+            }
+        });
 
-        // 3. Контент ленты
-        const feedData = [
-            { name: "Julian", text: "Sunset vibes", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800", likes: "1.2k" },
-            { name: "Maria", text: "City lights", img: "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800", likes: "5.6k" }
+        container.addEventListener('touchend', () => {
+            container.style.transform = '';
+            headerText.style.transform = '';
+            ptr.style.transform = 'translateX(-50%) translateY(-50px)';
+            if (parseInt(container.style.transform.replace(/[^\d.]/g, '')) > 60) {
+                tg.HapticFeedback.notificationOccurred('success');
+            }
+        });
+
+        // --- ГЕНЕРАЦИЯ СТЕКА (НЕ ИНСТА) ---
+        const feedStack = document.getElementById('feed-stack');
+        const samples = [
+            "https://images.unsplash.com/photo-1614850523296-d8c1af93d400?w=800",
+            "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=800",
+            "https://images.unsplash.com/photo-1579546128127-b456567ec430?w=800"
         ];
 
-        const feed = document.getElementById('feed');
-        feedData.forEach(item => {
-            feed.innerHTML += `
-                <div class="story-card">
-                    <img src="${item.img}" class="media">
-                    <div class="card-overlay">
-                        <div class="card-bottom">
-                            <div class="info">
-                                <span class="author-name">${item.name}</span>
-                                <span class="caption">${item.text}</span>
-                            </div>
-                            <div class="card-actions">
-                                <div class="action-btn" onclick="tg.HapticFeedback.impactOccurred('heavy')">
-                                    <img src="https://cdn-icons-png.flaticon.com/512/7754/7754213.png">
-                                    <span>${item.likes}</span>
-                                </div>
-                                <div class="action-btn">
-                                    <img src="https://cdn-icons-png.flaticon.com/512/6997/6997415.png">
-                                    <span>12</span>
-                                </div>
-                                <div class="action-btn share-btn" onclick="tg.HapticFeedback.impactOccurred('medium')">
-                                    <img src="https://cdn-icons-png.flaticon.com/512/2550/2550240.png">
-                                </div>
-                            </div>
+        samples.forEach((img, i) => {
+            feedStack.innerHTML += `
+                <div class="stack-tile">
+                    <img src="${img}" class="tile-media">
+                    <div class="tile-glass">
+                        <div style="font-weight:800; font-size:18px;">Abstract Flow #${i+1}</div>
+                        <div class="tile-actions">
+                            <button class="tile-btn" onclick="like(this)"><img src="https://cdn-icons-png.flaticon.com/512/7754/7754213.png"></button>
+                            <button class="tile-btn"><img src="https://cdn-icons-png.flaticon.com/512/2550/2550240.png"></button>
                         </div>
                     </div>
                 </div>
             `;
         });
 
-        // 4. Логика таббара (Тот самый "Пластилин")
-        const blob = document.getElementById('blob');
-        const items = document.querySelectorAll('.nav-item');
-        let currentIndex = 0;
+        // --- TG SYNC ---
+        const stories = document.getElementById('stories');
+        for(let i=0; i<8; i++) {
+            stories.innerHTML += `
+                <div class="bubble">
+                    <div class="bubble-frame"><img src="https://i.pravatar.cc/100?u=${i}" style="width:100%"></div>
+                    ${i % 3 === 0 ? '<div class="online-badge"></div>' : ''}
+                    <div style="font-size:10px; margin-top:5px; opacity:0.6;">User ${i}</div>
+                </div>
+            `;
+        }
 
-        function move(index) {
-            const targetItem = document.getElementById(`tab-${index}`);
-            
-            if (index === currentIndex) {
-                const r = () => Math.floor(Math.random() * 8 + 46); 
-                blob.style.borderRadius = `${r()}% ${100-r()}% ${r()}% ${100-r()}% / ${100-r()}% ${r()}% ${100-r()}% ${r()}%`;
-                blob.style.transform = `scale(1.04)`;
-                setTimeout(() => { blob.style.borderRadius = ''; blob.style.transform = ''; }, 200);
+        const user = tg.initDataUnsafe.user;
+        if (user?.photo_url) {
+            document.getElementById('my-avatar').style.backgroundImage = `url(${user.photo_url})`;
+            document.getElementById('nav-pfp').style.backgroundImage = `url(${user.photo_url})`;
+        }
+
+        // --- КУЛЬТОВЫЙ ТАББАР ---
+        const blob = document.getElementById('blob');
+        let currentIdx = 0;
+
+        function move(index, el) {
+            if (index === currentIdx) {
                 tg.HapticFeedback.notificationOccurred('success');
                 return;
             }
-
-            items.forEach(item => item.classList.remove('active'));
-            blob.classList.remove('stretch-right', 'stretch-left');
-
-            if (index > currentIndex) blob.classList.add('stretch-right');
-            else blob.classList.add('stretch-left');
-
-            const targetX = targetItem.offsetLeft + (targetItem.offsetWidth / 2) - (blob.offsetWidth / 2);
-            blob.style.left = `${targetX}px`;
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
             
-            targetItem.classList.add('active');
-            currentIndex = index;
-
-            setTimeout(() => {
-                blob.classList.remove('stretch-right', 'stretch-left');
-            }, 200);
-
+            blob.classList.remove('stretch-right', 'stretch-left');
+            blob.classList.add(index > currentIdx ? 'stretch-right' : 'stretch-left');
+            
+            blob.style.left = `${el.offsetLeft + (el.offsetWidth/2) - 23}px`;
+            currentIdx = index;
+            
+            setTimeout(() => blob.classList.remove('stretch-right', 'stretch-left'), 300);
             tg.HapticFeedback.impactOccurred('medium');
         }
 
-        window.onload = () => move(0);
+        function like(el) {
+            tg.HapticFeedback.impactOccurred('heavy');
+            el.style.filter = "drop-shadow(0 0 10px var(--tg-accent))";
+        }
     </script>
 </body>
 </html>
