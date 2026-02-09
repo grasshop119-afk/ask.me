@@ -10,202 +10,199 @@
             --tg-secondary: var(--tg-theme-secondary-bg-color, #1c1c1d);
             --tg-text: var(--tg-theme-text-color, #ffffff);
             --tg-hint: var(--tg-theme-hint-color, #999999);
-            --nav-bg: rgba(28, 28, 30, 0.8);
+            /* Увеличенный отступ для режима Fullsize */
+            --tg-header-gap: 85px; 
+            --nav-bg: rgba(28, 28, 30, 0.85);
             --safe-top: env(safe-area-inset-top, 0px);
             --safe-bottom: env(safe-area-inset-bottom, 0px);
-            --tg-safe-h: 60px;
-            --border-style: 1px solid rgba(255, 255, 255, 0.1);
+            --border-style: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         body {
             margin: 0;
             background-color: var(--tg-bg);
             color: var(--tg-text);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* --- HEADER AREA --- */
+        /* --- ФИКСИРОВАННАЯ ШАПКА --- */
         .header-container {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 2000;
-            background: var(--tg-bg);
+            background: linear-gradient(to bottom, var(--tg-bg) 80%, transparent);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: calc(var(--safe-top) + 15px) 20px 15px;
-            border-bottom: var(--border-style);
+            padding: calc(var(--safe-top) + 20px) 25px 20px;
         }
 
         .header {
-            font-size: 22px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: -1px;
             text-transform: uppercase;
         }
 
-        /* --- MAIN CONTENT SCROLL --- */
+        /* --- КОНТЕНТ --- */
         .main-content {
-            padding-top: calc(var(--safe-top) + 80px);
-            padding-bottom: calc(var(--safe-bottom) + 110px);
+            padding-top: var(--tg-header-gap);
+            padding-bottom: calc(var(--safe-bottom) + 120px);
         }
 
-        /* --- STORIES SECTION --- */
-        .stories-container {
+        /* --- СТОРИС КОНТАКТОВ --- */
+        .stories-line {
             display: flex;
             overflow-x: auto;
-            padding: 15px 0;
-            gap: 12px;
-            padding-left: 20px;
+            padding: 10px 0 25px 20px;
+            gap: 15px;
             scrollbar-width: none;
         }
-        .stories-container::-webkit-scrollbar { display: none; }
+        .stories-line::-webkit-scrollbar { display: none; }
 
-        .story-item {
+        .story-node {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 6px;
-            min-width: 70px;
+            gap: 8px;
+            min-width: 72px;
         }
 
-        .story-ring {
-            width: 66px;
-            height: 66px;
-            border-radius: 50%;
+        .ring {
+            width: 68px;
+            height: 68px;
+            border-radius: 25px; /* Квадрат со скруглением в стиле TG */
             padding: 2px;
-            background: linear-gradient(45deg, var(--tg-accent), #8E2DE2);
+            background: linear-gradient(45deg, var(--tg-accent), #a336ff);
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .story-ring.viewed {
-            background: rgba(255,255,255,0.1);
-        }
+        .ring.seen { background: rgba(255,255,255,0.15); }
 
-        .story-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
+        .avatar-img {
+            width: 62px;
+            height: 62px;
+            border-radius: 22px;
             background: var(--tg-secondary);
             border: 2px solid var(--tg-bg);
             object-fit: cover;
         }
 
-        .story-name {
+        .user-label {
             font-size: 11px;
-            color: var(--tg-hint);
+            color: var(--tg-text);
             font-weight: 500;
-            max-width: 70px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            opacity: 0.8;
         }
 
-        /* --- FEED SECTION --- */
-        .feed {
-            padding: 0 15px;
+        /* --- СТОРИС-КАРТОЧКИ (ЛЕНТА) --- */
+        .story-feed {
+            padding: 0 16px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 16px;
         }
 
-        .post-card {
+        .story-card {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 9 / 14; /* Вертикальный формат сторис */
             background: var(--tg-secondary);
-            border-radius: 24px;
+            border-radius: 32px;
             overflow: hidden;
             border: var(--border-style);
-            transition: transform 0.2s ease;
         }
 
-        .post-card:active {
-            transform: scale(0.98);
-        }
-
-        .post-header {
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .post-user {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .user-avatar-small {
-            width: 32px;
-            height: 32px;
-            border-radius: 10px;
-            background: var(--tg-accent);
-        }
-
-        .user-info .name {
-            font-size: 14px;
-            font-weight: 600;
-            display: block;
-        }
-
-        .user-info .meta {
-            font-size: 11px;
-            color: var(--tg-hint);
-        }
-
-        .post-content {
-            width: 100%;
-            aspect-ratio: 4/5;
-            background: #111;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .post-content img {
+        .story-card img.media {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
 
-        .post-actions {
-            padding: 14px 18px;
+        .card-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 40%, rgba(0,0,0,0.4) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+        }
+
+        .card-top {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .author-pfp {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .card-bottom {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-end;
         }
 
-        .action-group {
-            display: flex;
-            gap: 18px;
+        .card-info .author-name {
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 4px;
+            display: block;
         }
 
-        .action-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
+        .card-info .caption {
             font-size: 13px;
+            opacity: 0.7;
+        }
+
+        /* --- ИКОНКИ ДЕЙСТВИЙ --- */
+        .card-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .action-btn img {
+            width: 28px;
+            height: 28px;
+            filter: invert(1);
+        }
+
+        .action-btn span {
+            font-size: 11px;
             font-weight: 600;
         }
 
-        .action-item svg {
-            width: 22px;
-            height: 22px;
-            fill: none;
-            stroke: currentColor;
-            stroke-width: 2;
+        /* Репост не темнеет при нажатии */
+        .share-btn:active {
+            opacity: 1 !important;
+            transform: scale(1.1);
         }
 
-        /* --- NAV BAR (EXACTLY AS PREVIOUS) --- */
+        /* --- NAV ISLAND (ОБНОВЛЕННЫЙ) --- */
         .nav-wrapper {
             position: fixed;
-            bottom: calc(30px + var(--safe-bottom));
+            bottom: calc(20px + var(--safe-bottom)); /* Опустили ниже */
             left: 50%;
             transform: translateX(-50%);
             z-index: 3000;
@@ -214,11 +211,11 @@
         .nav-island {
             position: relative;
             width: 240px;
-            height: 60px;
+            height: 64px;
             background: var(--nav-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 30px;
+            backdrop-filter: blur(25px); /* Сильный блюр */
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -228,60 +225,51 @@
 
         .blob {
             position: absolute;
-            width: 46px;
-            height: 46px;
+            width: 48px;
+            height: 48px;
             background: var(--tg-accent);
             border-radius: 50%;
             z-index: 0;
             top: 50%;
-            margin-top: -23px;
+            margin-top: -24px;
             left: 15px;
-            transition: left 0.5s cubic-bezier(0.19, 1, 0.22, 1), border-radius 0.3s ease, transform 0.3s ease;
+            transition: left 0.5s cubic-bezier(0.19, 1, 0.22, 1), border-radius 0.3s ease;
         }
-
-        .stretch-right { border-radius: 40% 70% 70% 40% / 50% 50% 50% 50% !important; transform: scaleX(1.18) !important; }
-        .stretch-left { border-radius: 70% 40% 40% 70% / 50% 50% 50% 50% !important; transform: scaleX(1.18) !important; }
 
         .nav-item {
             position: relative;
-            width: 50px;
+            width: 55px;
             height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 2;
-            -webkit-tap-highlight-color: transparent;
         }
 
         .nav-item img {
             width: 26px;
             height: 26px;
             filter: invert(1);
-            opacity: 0.3;
+            opacity: 0.35;
             transition: opacity 0.3s ease;
         }
 
         .nav-item.active img { opacity: 1; }
 
-        .avatar {
+        .profile-avatar {
             width: 28px;
             height: 28px;
             border-radius: 50%;
             background-color: #333;
             background-size: cover;
+            background-position: center;
             opacity: 0.4;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        .active .avatar { opacity: 1; }
+        .active .profile-avatar { opacity: 1; border-color: #fff; }
 
-        /* --- TG VIBE INTEGRATION --- */
-        .premium-badge {
-            background: linear-gradient(45deg, #007AFF, #00C6FF);
-            padding: 2px 8px;
-            border-radius: 6px;
-            font-size: 9px;
-            font-weight: 800;
-            margin-left: 5px;
-        }
+        .stretch-right { border-radius: 40% 70% 70% 40% / 50% 50% 50% 50%; transform: scaleX(1.15); }
+        .stretch-left { border-radius: 70% 40% 40% 70% / 50% 50% 50% 50%; transform: scaleX(1.15); }
 
     </style>
 </head>
@@ -289,18 +277,17 @@
 
     <div class="header-container">
         <div class="header" id="title">ДЛЯ ТЕБЯ</div>
-        <div style="color: var(--tg-accent); font-weight: 700; font-size: 14px;">LIVE</div>
     </div>
 
     <div class="main-content">
-        <div class="stories-container" id="stories">
-            <div class="story-item">
-                <div class="story-ring"><img class="story-avatar" src="https://i.pravatar.cc/150?u=my" alt=""></div>
-                <div class="story-name">Ты</div>
+        <div class="stories-line" id="contacts-stories">
+            <div class="story-node">
+                <div class="ring"><div class="avatar-img" id="my-story-pfp" style="background-size:cover;"></div></div>
+                <div class="user-label">Ты</div>
             </div>
             </div>
 
-        <div class="feed" id="feed-container">
+        <div class="story-feed" id="main-feed">
             </div>
     </div>
 
@@ -314,7 +301,7 @@
                 <img src="https://cdn-icons-png.flaticon.com/512/8025/8025278.png" alt="search">
             </div>
             <div class="nav-item" id="tab-2" onclick="move(2)">
-                <div class="avatar" id="pfp"></div>
+                <div class="profile-avatar" id="nav-pfp"></div>
             </div>
         </div>
     </div>
@@ -324,66 +311,63 @@
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
+        if (tg.requestFullscreen) tg.requestFullscreen();
 
-        // Настройка SettingsButton как заказывали
         tg.SettingsButton.show();
-        tg.SettingsButton.onClick(() => {
-            tg.HapticFeedback.impactOccurred('light');
-        });
 
-        // Данные для ленты
-        const mockPosts = [
-            { name: "Aiden Raid", meta: "3ч назад • #Design", img: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80", likes: "2.4k" },
-            { name: "Oliver Bennet", meta: "5ч назад • #Tech", img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&q=80", likes: "12k" },
-            { name: "Rose Oak", meta: "12ч назад • #Travel", img: "https://images.unsplash.com/photo-1527631746610-bca00a040d60?w=800&q=80", likes: "850" }
+        // Данные для ленты (формат Сторис)
+        const content = [
+            { user: "Aiden Raid", text: "New look #style", img: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800", likes: "1.2k" },
+            { user: "Oliver Bennet", text: "Morning in Tokyo", img: "https://images.unsplash.com/photo-1540959733332-e9ab42bd7d0b?w=800", likes: "8.4k" },
+            { user: "Rose Oak", text: "Cooking vibe", img: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800", likes: "940" }
         ];
 
-        // Рендер постов
-        const feed = document.getElementById('feed-container');
-        mockPosts.forEach(post => {
+        const feed = document.getElementById('main-feed');
+        content.forEach(item => {
             feed.innerHTML += `
-                <div class="post-card">
-                    <div class="post-header">
-                        <div class="post-user">
-                            <div class="user-avatar-small" style="background-image: url('https://i.pravatar.cc/100?u=${post.name}'); background-size: cover;"></div>
-                            <div class="user-info">
-                                <span class="name">${post.name}</span>
-                                <span class="meta">${post.meta}</span>
+                <div class="story-card">
+                    <img src="${item.img}" class="media" loading="lazy">
+                    <div class="card-overlay">
+                        <div class="card-top">
+                            <img src="https://i.pravatar.cc/100?u=${item.user}" class="author-pfp">
+                            <span style="font-weight:600; font-size:14px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">${item.user}</span>
+                        </div>
+                        <div class="card-bottom">
+                            <div class="card-info">
+                                <span class="author-name">${item.user}</span>
+                                <span class="caption">${item.text}</span>
+                            </div>
+                            <div class="card-actions">
+                                <div class="action-btn" onclick="like(this)">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/7754/7754213.png">
+                                    <span>${item.likes}</span>
+                                </div>
+                                <div class="action-btn">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/6997/6997415.png">
+                                    <span>42</span>
+                                </div>
+                                <div class="action-btn share-btn" onclick="tg.HapticFeedback.impactOccurred('medium')">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/2550/2550240.png">
+                                </div>
                             </div>
                         </div>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
-                    </div>
-                    <div class="post-content">
-                        <img src="${post.img}" loading="lazy">
-                    </div>
-                    <div class="post-actions">
-                        <div class="action-group">
-                            <div class="action-item" onclick="handleLike(this)">
-                                <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                                <span>${post.likes}</span>
-                            </div>
-                            <div class="action-item">
-                                <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
-                            </div>
-                        </div>
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
                     </div>
                 </div>
             `;
         });
 
-        // Сториз
-        const stories = document.getElementById('stories');
-        for(let i=0; i<8; i++) {
-            stories.innerHTML += `
-                <div class="story-item">
-                    <div class="story-ring viewed"><img class="story-avatar" src="https://i.pravatar.cc/150?img=${i+10}"></div>
-                    <div class="story-name">User_${i}</div>
+        // Контакты в сторис
+        const contactBar = document.getElementById('contacts-stories');
+        for(let i=1; i<10; i++) {
+            contactBar.innerHTML += `
+                <div class="story-node">
+                    <div class="ring viewed"><img class="avatar-img" src="https://i.pravatar.cc/150?img=${i+20}"></div>
+                    <div class="user-label">Contact ${i}</div>
                 </div>
             `;
         }
 
-        // --- ЛОГИКА ТАББАРА (БЕЗ ИЗМЕНЕНИЙ В ИКОНКАХ) ---
+        // Логика таббара
         const blob = document.getElementById('blob');
         const items = document.querySelectorAll('.nav-item');
         let currentIndex = 0;
@@ -391,10 +375,6 @@
         function move(index) {
             const targetItem = document.getElementById(`tab-${index}`);
             if (index === currentIndex) {
-                const r = () => Math.floor(Math.random() * 8 + 46); 
-                blob.style.borderRadius = `${r()}% ${100-r()}% ${r()}% ${100-r()}% / ${100-r()}% ${r()}% ${100-r()}% ${r()}%`;
-                blob.style.transform = `scale(1.04)`;
-                setTimeout(() => { blob.style.borderRadius = ''; blob.style.transform = ''; }, 200);
                 tg.HapticFeedback.notificationOccurred('success');
                 return;
             }
@@ -402,23 +382,29 @@
             blob.classList.remove('stretch-right', 'stretch-left');
             if (index > currentIndex) blob.classList.add('stretch-right');
             else blob.classList.add('stretch-left');
+            
             const targetX = targetItem.offsetLeft + (targetItem.offsetWidth / 2) - (blob.offsetWidth / 2);
             blob.style.left = `${targetX}px`;
             targetItem.classList.add('active');
             currentIndex = index;
-            setTimeout(() => { blob.classList.remove('stretch-right', 'stretch-left'); }, 180);
+            setTimeout(() => blob.classList.remove('stretch-right', 'stretch-left'), 200);
             tg.HapticFeedback.impactOccurred('medium');
         }
 
-        function handleLike(el) {
+        function like(el) {
             tg.HapticFeedback.impactOccurred('heavy');
-            el.style.color = 'var(--tg-accent)';
-            el.querySelector('svg').style.fill = 'var(--tg-accent)';
+            el.style.color = '#ff3b30';
+            el.querySelector('img').style.filter = 'none';
         }
 
-        // Установка аватара
-        if (tg.initDataUnsafe.user?.photo_url) {
-            document.getElementById('pfp').style.backgroundImage = `url(${tg.initDataUnsafe.user.photo_url})`;
+        // Установка аватара пользователя TG
+        const userPhoto = tg.initDataUnsafe.user?.photo_url;
+        if (userPhoto) {
+            document.getElementById('nav-pfp').style.backgroundImage = `url(${userPhoto})`;
+            document.getElementById('my-story-pfp').style.backgroundImage = `url(${userPhoto})`;
+        } else {
+            document.getElementById('nav-pfp').style.backgroundColor = 'var(--tg-accent)';
+            document.getElementById('my-story-pfp').style.backgroundColor = 'var(--tg-accent)';
         }
 
         window.onload = () => move(0);
